@@ -1,0 +1,134 @@
+[
+  {
+    "id": 1,
+    "name": "第四系覆盖层",
+    "lithology": "粉质黏土、松散堆积物",
+    "age": "新生代",
+    "thickness": 0.12,
+    "color": "#2c7899",
+    "porosity": "较高",
+    "permeability": "中等",
+    "description": "表层覆盖层，主要反映地表沉积与风化堆积特征。"
+  },
+  {
+    "id": 2,
+    "name": "砂质泥岩层",
+    "lithology": "砂质泥岩",
+    "age": "中生代",
+    "thickness": 0.08,
+    "color": "#c27a3b",
+    "porosity": "中等",
+    "permeability": "较低",
+    "description": "该层结构较致密，常作为相对隔水层。"
+  },
+  {
+    "id": 3,
+    "name": "细砂岩层",
+    "lithology": "细砂岩",
+    "age": "中生代",
+    "thickness": 0.12,
+    "color": "#6f858a",
+    "porosity": "中等偏高",
+    "permeability": "中等",
+    "description": "粒度较细，具有一定渗透性，可作为含水层候选层位。"
+  },
+  {
+    "id": 4,
+    "name": "泥质粉砂岩层",
+    "lithology": "泥质粉砂岩",
+    "age": "中生代",
+    "thickness": 0.08,
+    "color": "#a87548",
+    "porosity": "中等",
+    "permeability": "较低",
+    "description": "夹泥成分较多，工程性质较复杂。"
+  },
+  {
+    "id": 5,
+    "name": "粉砂岩层",
+    "lithology": "粉砂岩",
+    "age": "中生代",
+    "thickness": 0.12,
+    "color": "#8ca0a0",
+    "porosity": "中等",
+    "permeability": "中等",
+    "description": "该层在剖面中较连续，层理较清晰。"
+  },
+  {
+    "id": 6,
+    "name": "中砂岩层",
+    "lithology": "中砂岩",
+    "age": "中生代",
+    "thickness": 0.07,
+    "color": "#d08a44",
+    "porosity": "较高",
+    "permeability": "较高",
+    "description": "颗粒较粗，渗透性相对较好。"
+  },
+  {
+    "id": 7,
+    "name": "泥岩层",
+    "lithology": "泥岩",
+    "age": "中生代",
+    "thickness": 0.11,
+    "color": "#557d91",
+    "porosity": "较低",
+    "permeability": "低",
+    "description": "该层整体较致密，常起隔水作用。"
+  },
+  {
+    "id": 8,
+    "name": "含砂泥岩层",
+    "lithology": "含砂泥岩",
+    "age": "中生代",
+    "thickness": 0.09,
+    "color": "#9d7858",
+    "porosity": "中等",
+    "permeability": "较低",
+    "description": "岩性过渡明显，局部物性变化较大。"
+  },
+  {
+    "id": 9,
+    "name": "灰色砂岩层",
+    "lithology": "灰色砂岩",
+    "age": "中生代",
+    "thickness": 0.12,
+    "color": "#87959a",
+    "porosity": "中等偏高",
+    "permeability": "中等偏高",
+    "description": "层体较稳定，是较典型的沉积岩层。"
+  },
+  {
+    "id": 10,
+    "name": "褐色砂岩层",
+    "lithology": "褐色砂岩",
+    "age": "中生代",
+    "thickness": 0.08,
+    "color": "#c47b3a",
+    "porosity": "中等",
+    "permeability": "中等",
+    "description": "颜色较醒目，便于在剖面中识别。"
+  },
+  {
+    "id": 11,
+    "name": "深部泥岩层",
+    "lithology": "深灰色泥岩",
+    "age": "中生代",
+    "thickness": 0.14,
+    "color": "#5f8192",
+    "porosity": "低",
+    "permeability": "低",
+    "description": "深部稳定层，强度较高。"
+  },
+  {
+    "id": 12,
+    "name": "基底岩层",
+    "lithology": "基底复合岩层",
+    "age": "更老地层",
+    "thickness": 0.18,
+    "color": "#8b7d6a",
+    "porosity": "低",
+    "permeability": "低",
+    "description": "作为底部基底层，承载上覆地层。"
+  }
+]
