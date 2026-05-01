@@ -10,7 +10,7 @@ import {
   createSideGeometry,
   darkenColor,
   lightenColor,
-} from "../utils/geoLayerUtils";
+} from "../../utils/geoLayerUtils";
 
 function BlobPatch({ cx, cz, y, rx, rz, seed }) {
   const geometry = useMemo(

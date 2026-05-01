@@ -1,4 +1,4 @@
-import GeoScene from "./components/GeoScene";
+import GeoScene from "./components/geo3d/GeoScene";
 import Header from "./components/Header";
 import LayerControls from "./components/LayerControls";
 import LayerInfoPanel from "./components/LayerInfoPanel";
