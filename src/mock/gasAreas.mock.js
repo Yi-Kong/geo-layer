@@ -1,0 +1,31 @@
+export const gasRichAreas = [
+  {
+    id: "gas-3101-02",
+    code: "GAS-3101-02",
+    name: "3101北翼瓦斯富集区",
+    type: "gas_rich_area",
+    riskType: "gas",
+    geometryType: "volume",
+    points: [
+      [35, 32, 12],
+      [155, 32, 12],
+      [155, 32, 96],
+      [35, 32, 96],
+      [35, 54, 12],
+      [155, 54, 12],
+      [155, 54, 96],
+      [35, 54, 96],
+    ],
+    coalSeamId: "coal-003",
+    gasContent: 13.8,
+    gasPressure: 0.92,
+    riskLevel: "high",
+    influenceRadius: 90,
+    visible: true,
+    properties: {
+      source: "瓦斯地质单元模拟结果",
+      description: "位于3号煤层同层位，靠近工作面北侧。",
+      permeability: "低透气性",
+    },
+  },
+];

@@ -1,0 +1,9 @@
+export { mineInfo } from "./mine.mock.js";
+export { strata } from "./strata.mock.js";
+export { coalSeams } from "./coalSeams.mock.js";
+export { workingFaces } from "./workingFaces.mock.js";
+export { goafWaterAreas } from "./goafWaterAreas.mock.js";
+export { waterRichAreas } from "./waterRichAreas.mock.js";
+export { gasRichAreas } from "./gasAreas.mock.js";
+export { warningRules } from "./warningRules.mock.js";
+export { treatmentMeasures } from "./treatmentMeasures.mock.js";

@@ -1,0 +1,30 @@
+export const waterRichAreas = [
+  {
+    id: "wra-ord-01",
+    code: "WRA-ORD-01",
+    name: "奥灰富水异常区",
+    type: "water_rich_area",
+    riskType: "water_inrush",
+    geometryType: "volume",
+    points: [
+      [170, -150, -155],
+      [330, -150, -155],
+      [330, -150, 20],
+      [170, -150, 20],
+      [170, -46, -155],
+      [330, -46, -155],
+      [330, -46, 20],
+      [170, -46, 20],
+    ],
+    aquifer: "奥陶系灰岩含水层",
+    waterRichLevel: "强富水",
+    riskLevel: "high",
+    influenceRadius: 180,
+    visible: true,
+    properties: {
+      pressure: "2.4MPa",
+      interpretation: "电法低阻异常与构造裂隙叠加",
+      description: "模拟底板突水风险来源，随推进距离增加进入影响范围。",
+    },
+  },
+];

@@ -1,62 +1,120 @@
+import { useEffect, useMemo, useState } from "react";
 import GeoScene from "./components/geo3d/GeoScene";
-import Header from "./components/Header";
-import LayerControls from "./components/LayerControls";
-import LayerInfoPanel from "./components/LayerInfoPanel";
+import AdvanceSlider from "./components/mining/AdvanceSlider";
+import InfoPanel from "./components/panels/InfoPanel";
+import LayerPanel from "./components/panels/LayerPanel";
+import WarningPanel from "./components/panels/WarningPanel";
 import { useLayerControl } from "./hooks/useLayerControl";
+import {
+  getCoalSeams,
+  getGasRichAreas,
+  getGoafWaterAreas,
+  getMineInfo,
+  getRiskBodies,
+  getStrata,
+  getWaterRichAreas,
+  getWorkingFaces,
+} from "./services/mockDataService";
+import { generateWarningsByAdvance } from "./services/warningService";
+import { useSceneStore } from "./store/sceneStore";
+import { useWarningStore } from "./store/warningStore";
 
 export default function App() {
   const {
     layerData,
     visibleLayerIds,
     selectedLayerId,
-    selectedLayer,
     explode,
     loading,
-    loadError,
     setExplode,
     setSelectedLayerId,
-    toggleLayerVisible,
-    showAllLayers,
-    hideAllLayers,
   } = useLayerControl();
+  const setSelectedObject = useSceneStore((state) => state.setSelectedObject);
+  const setWarnings = useWarningStore((state) => state.setWarnings);
+  const warnings = useWarningStore((state) => state.warnings);
+  const mineInfo = useMemo(() => getMineInfo(), []);
+  const strata = useMemo(() => getStrata(), []);
+  const coalSeams = useMemo(() => getCoalSeams(), []);
+  const workingFaces = useMemo(() => getWorkingFaces(), []);
+  const goafWaterAreas = useMemo(() => getGoafWaterAreas(), []);
+  const waterRichAreas = useMemo(() => getWaterRichAreas(), []);
+  const gasRichAreas = useMemo(() => getGasRichAreas(), []);
+  const riskBodies = useMemo(() => getRiskBodies(), []);
+  const [advanceDistance, setAdvanceDistance] = useState(
+    workingFaces[0]?.currentAdvance || 0
+  );
+
+  useEffect(() => {
+    setWarnings(
+      generateWarningsByAdvance(workingFaces, riskBodies, advanceDistance)
+    );
+  }, [advanceDistance, riskBodies, setWarnings, workingFaces]);
+
+  function handleSelectLegacyLayer(layerId) {
+    setSelectedLayerId(layerId);
+
+    const layer = layerData.find((item) => item.id === layerId);
+
+    if (layer) {
+      setSelectedObject({
+        ...layer,
+        type: "legacy_stratum",
+        code: `LEGACY-${layer.id}`,
+        properties: {
+          lithology: layer.lithology,
+          age: layer.age,
+          porosity: layer.porosity,
+          permeability: layer.permeability,
+          description: layer.description,
+        },
+      });
+    }
+  }
 
   return (
-    <div className="relative h-screen w-screen">
+    <div className="relative h-screen w-screen overflow-hidden bg-slate-950">
       <GeoScene
         layerData={layerData}
         visibleLayerIds={visibleLayerIds}
         explode={explode}
         selectedLayerId={selectedLayerId}
-        loading={loading}
-        loadError={loadError}
-        onSelectLayer={setSelectedLayerId}
+        onSelectLayer={handleSelectLegacyLayer}
+        strata={strata}
+        coalSeams={coalSeams}
+        workingFaces={workingFaces}
+        goafWaterAreas={goafWaterAreas}
+        waterRichAreas={waterRichAreas}
+        gasRichAreas={gasRichAreas}
+        warnings={warnings}
+        advanceDistance={advanceDistance}
       />
 
-      <div className="absolute right-6 top-6 max-h-[calc(100vh-48px)] w-[340px] overflow-auto rounded-xl border border-black/[0.08] bg-[#fffaf4]/95 p-4 shadow-[0_10px_28px_rgba(0,0,0,0.08)] backdrop-blur-[8px]">
-        <Header />
-
-        {loading && <div className="state-text">正在加载地层数据...</div>}
-
-        {loadError && <div className="error-text">{loadError}</div>}
-
-        {!loading && !loadError && (
-          <>
-            <LayerControls
-              explode={explode}
-              layers={layerData}
-              selectedLayerId={selectedLayerId}
-              visibleLayerIds={visibleLayerIds}
-              onExplodeChange={setExplode}
-              onHideAllLayers={hideAllLayers}
-              onSelectLayer={setSelectedLayerId}
-              onShowAllLayers={showAllLayers}
-              onToggleLayerVisible={toggleLayerVisible}
-            />
-
-            <LayerInfoPanel layer={selectedLayer} />
-          </>
-        )}
+      <div className="pointer-events-none fixed left-1/2 top-5 z-20 hidden -translate-x-1/2 border border-white/10 bg-slate-950/70 px-4 py-2 text-center text-slate-100 shadow-[0_12px_30px_rgba(0,0,0,0.26)] backdrop-blur-md lg:block">
+        <div className="text-sm font-semibold text-cyan-100">
+          基于模拟数据的煤矿透明地质三维可视化与风险预警系统
+        </div>
+        <div className="mt-1 text-[11px] text-slate-400">
+          {mineInfo.location} / {mineInfo.coordinateSystem}
+        </div>
       </div>
+
+      <LayerPanel
+        mineInfo={mineInfo}
+        explode={explode}
+        onExplodeChange={setExplode}
+        legacyLoading={loading}
+      />
+      <InfoPanel coalSeams={coalSeams} />
+      <WarningPanel
+        workingFaces={workingFaces}
+        riskBodies={riskBodies}
+        advanceDistance={advanceDistance}
+      />
+      <AdvanceSlider
+        workingFace={workingFaces[0]}
+        advanceDistance={advanceDistance}
+        onAdvanceChange={setAdvanceDistance}
+      />
     </div>
   );
 }

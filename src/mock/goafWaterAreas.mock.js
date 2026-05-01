@@ -1,0 +1,31 @@
+export const goafWaterAreas = [
+  {
+    id: "gwa-302",
+    code: "GWA-302",
+    name: "302采空积水区",
+    type: "goaf_water_area",
+    riskType: "goaf_water",
+    geometryType: "volume",
+    points: [
+      [238, 18, -118],
+      [318, 18, -118],
+      [318, 18, -32],
+      [238, 18, -32],
+      [238, 58, -118],
+      [318, 58, -118],
+      [318, 58, -32],
+      [238, 58, -32],
+    ],
+    waterVolume: 86000,
+    waterLevelElevation: 42,
+    area: 0.72,
+    riskLevel: "critical",
+    influenceRadius: 120,
+    visible: true,
+    properties: {
+      source: "邻近老空区模拟边界",
+      surveyConfidence: "中等",
+      description: "位于3101工作面推进方向前方，积水量较大。",
+    },
+  },
+];
