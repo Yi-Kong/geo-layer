@@ -1,29 +1,29 @@
-import { getJSON } from "./httpClient";
+import { request } from "./httpClient";
 
 export function fetchRiskBodies() {
-  return getJSON("/geo/risk-bodies");
+  return request.get("/geo/risk-bodies");
 }
 
 export function fetchGoafAreas() {
-  return getJSON("/geo/risk/goaf-areas");
+  return request.get("/geo/risk/goaf-areas");
 }
 
 export function fetchSmallMineDamageAreas() {
-  return getJSON("/geo/risk/small-mine-damage-areas");
+  return request.get("/geo/risk/small-mine-damage-areas");
 }
 
 export function fetchFaultInfluenceZones() {
-  return getJSON("/geo/risk/fault-influence-zones");
+  return request.get("/geo/risk/fault-influence-zones");
 }
 
 export function fetchAbandonedShafts() {
-  return getJSON("/geo/risk/abandoned-shafts");
+  return request.get("/geo/risk/abandoned-shafts");
 }
 
 export function fetchPoorSealedBoreholes() {
-  return getJSON("/geo/risk/poor-sealed-boreholes");
+  return request.get("/geo/risk/poor-sealed-boreholes");
 }
 
 export function fetchRiskRanges() {
-  return getJSON("/geo/risk-ranges");
+  return request.get("/geo/risk-ranges");
 }

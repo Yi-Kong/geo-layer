@@ -7,8 +7,8 @@ function buildURL(path) {
   return `${baseURL}${requestPath}`;
 }
 
-export async function getJSON(path) {
-  const response = await fetch(buildURL(path));
+async function requestJSON(path, options = {}) {
+  const response = await fetch(buildURL(path), options);
 
   if (!response.ok) {
     throw new Error(`Request failed: ${response.status}`);
@@ -16,3 +16,30 @@ export async function getJSON(path) {
 
   return response.json();
 }
+
+function get(path, options) {
+  return requestJSON(path, {
+    ...options,
+    method: "GET",
+  });
+}
+
+function send(method, path, data, options = {}) {
+  return requestJSON(path, {
+    ...options,
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      ...options.headers,
+    },
+    body: data === undefined ? undefined : JSON.stringify(data),
+  });
+}
+
+export const request = {
+  get,
+  post: (path, data, options) => send("POST", path, data, options),
+  put: (path, data, options) => send("PUT", path, data, options),
+  patch: (path, data, options) => send("PATCH", path, data, options),
+  delete: (path, data, options) => send("DELETE", path, data, options),
+};

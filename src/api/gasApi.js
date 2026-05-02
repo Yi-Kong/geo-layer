@@ -1,23 +1,23 @@
-import { getJSON } from "./httpClient";
+import { request } from "./httpClient";
 
 export function fetchGasRichAreas() {
-  return getJSON("/geo/gas/rich-areas");
+  return request.get("/geo/gas/rich-areas");
 }
 
 export function fetchGasContentPoints() {
-  return getJSON("/geo/gas/content-points");
+  return request.get("/geo/gas/content-points");
 }
 
 export function fetchGasPressurePoints() {
-  return getJSON("/geo/gas/pressure-points");
+  return request.get("/geo/gas/pressure-points");
 }
 
 export function fetchGasStats() {
-  return getJSON("/geo/gas/stats");
+  return request.get("/geo/gas/stats");
 }
 
 export function fetchGas() {
-  return getJSON("/geo/gas");
+  return request.get("/geo/gas");
 }
 
 export function fetchGasAreas() {
@@ -25,5 +25,5 @@ export function fetchGasAreas() {
 }
 
 export function fetchSoftLayers() {
-  return getJSON("/geo/gas/soft-layers");
+  return request.get("/geo/gas/soft-layers");
 }

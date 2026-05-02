@@ -1,7 +1,7 @@
-import { getJSON } from "./httpClient";
+import { request } from "./httpClient";
 
 export function fetchMine() {
-  return getJSON("/geo/mine");
+  return request.get("/geo/mine");
 }
 
 export function fetchMineInfo() {
@@ -9,21 +9,21 @@ export function fetchMineInfo() {
 }
 
 export function fetchMineOverview() {
-  return getJSON("/geo/mine/overview");
+  return request.get("/geo/mine/overview");
 }
 
 export function fetchMineLocation() {
-  return getJSON("/geo/mine/location");
+  return request.get("/geo/mine/location");
 }
 
 export function fetchMineStructureStats() {
-  return getJSON("/geo/mine/structure-stats");
+  return request.get("/geo/mine/structure-stats");
 }
 
 export function fetchMineWaterStats() {
-  return getJSON("/geo/mine/water-stats");
+  return request.get("/geo/mine/water-stats");
 }
 
 export function fetchMineProductionStats() {
-  return getJSON("/geo/mine/production-stats");
+  return request.get("/geo/mine/production-stats");
 }

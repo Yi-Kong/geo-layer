@@ -1,11 +1,11 @@
-import { getJSON } from "./httpClient";
+import { request } from "./httpClient";
 
 export function fetchGoafWaterAreas() {
-  return getJSON("/geo/water/goaf-water-areas");
+  return request.get("/geo/water/goaf-water-areas");
 }
 
 export function fetchRichWaterAreas() {
-  return getJSON("/geo/water/rich-water-areas");
+  return request.get("/geo/water/rich-water-areas");
 }
 
 export function fetchWaterRichAreas() {
@@ -13,21 +13,21 @@ export function fetchWaterRichAreas() {
 }
 
 export function fetchWaterInrushPoints() {
-  return getJSON("/geo/water/inrush-points");
+  return request.get("/geo/water/inrush-points");
 }
 
 export function fetchHydrologicalBoreholes() {
-  return getJSON("/geo/water/hydrological-boreholes");
+  return request.get("/geo/water/hydrological-boreholes");
 }
 
 export function fetchWaterAreas() {
-  return getJSON("/geo/water/areas");
+  return request.get("/geo/water/areas");
 }
 
 export function fetchWaterStats() {
-  return getJSON("/geo/water/stats");
+  return request.get("/geo/water/stats");
 }
 
 export function fetchAquifers() {
-  return getJSON("/geo/water/aquifers");
+  return request.get("/geo/water/aquifers");
 }

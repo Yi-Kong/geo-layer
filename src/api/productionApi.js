@@ -1,11 +1,11 @@
-import { getJSON } from "./httpClient";
+import { request } from "./httpClient";
 
 export function fetchWorkingFaces() {
-  return getJSON("/geo/working-faces");
+  return request.get("/geo/working-faces");
 }
 
 export function fetchRoadways() {
-  return getJSON("/geo/roadways");
+  return request.get("/geo/roadways");
 }
 
 export function fetchTunnels() {
@@ -13,21 +13,21 @@ export function fetchTunnels() {
 }
 
 export function fetchMiningAreas() {
-  return getJSON("/geo/mining-areas");
+  return request.get("/geo/mining-areas");
 }
 
 export function fetchMiningPaths() {
-  return getJSON("/geo/mining-paths");
+  return request.get("/geo/mining-paths");
 }
 
 export function fetchProductionDynamics() {
-  return getJSON("/geo/production/dynamics");
+  return request.get("/geo/production/dynamics");
 }
 
 export function fetchProductionAdvance() {
-  return getJSON("/geo/production/advance");
+  return request.get("/geo/production/advance");
 }
 
 export function fetchWorkfaceStatus() {
-  return getJSON("/geo/production/workface-status");
+  return request.get("/geo/production/workface-status");
 }

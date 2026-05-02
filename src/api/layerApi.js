@@ -1,17 +1,17 @@
-import { getJSON } from "./httpClient";
+import { request } from "./httpClient";
 
 export function fetchLayers() {
-  return getJSON("/geo/layers");
+  return request.get("/geo/layers");
 }
 
 export function fetchLayerGroups() {
-  return getJSON("/geo/layer-groups");
+  return request.get("/geo/layer-groups");
 }
 
 export function fetchLayerDefinitions() {
-  return getJSON("/geo/layer-definitions");
+  return request.get("/geo/layer-definitions");
 }
 
 export function fetchLayerConfig() {
-  return getJSON("/geo/layer-config");
+  return request.get("/geo/layer-config");
 }
