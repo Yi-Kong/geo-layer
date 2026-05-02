@@ -1,9 +1,20 @@
 import { create } from "zustand";
 import { fetchLayerConfig } from "../api/geoApi";
-import {
-  layerDefinitions as fallbackLayerDefinitions,
-  layerGroups as fallbackLayerGroups,
-} from "../mock/layers.js";
+
+const EMPTY_LAYER_CONFIG = {
+  layerGroups: [],
+  layerDefinitions: [],
+};
+
+async function loadFallbackLayerConfig() {
+  if (!import.meta.env.DEV || import.meta.env.VITE_ENABLE_MOCK === "false") {
+    return EMPTY_LAYER_CONFIG;
+  }
+
+  const { layerDefinitions, layerGroups } = await import("../mock/layers.js");
+
+  return { layerDefinitions, layerGroups };
+}
 
 function clampOpacity(value) {
   const numberValue = Number(value);
@@ -15,16 +26,9 @@ function clampOpacity(value) {
   return Math.min(1, Math.max(0.05, numberValue));
 }
 
-const initialLayers = Object.fromEntries(
-  fallbackLayerDefinitions.map((layer) => [
-    layer.id,
-    layer.defaultVisible !== false,
-  ])
-);
+const initialLayers = {};
 
-const initialOpacities = Object.fromEntries(
-  fallbackLayerDefinitions.map((layer) => [layer.id, layer.opacity ?? 1])
-);
+const initialOpacities = {};
 
 function getLayerVisibility(layer, previousLayers = {}) {
   if (Object.prototype.hasOwnProperty.call(previousLayers, layer.id)) {
@@ -73,8 +77,8 @@ function setGroupVisibility(state, groupId, visible) {
 }
 
 export const useLayerStore = create((set) => ({
-  layerGroups: fallbackLayerGroups,
-  layerDefinitions: fallbackLayerDefinitions,
+  layerGroups: [],
+  layerDefinitions: [],
   layers: initialLayers,
   opacities: initialOpacities,
   selectedLayerId: null,
@@ -82,12 +86,13 @@ export const useLayerStore = create((set) => ({
   loadLayerConfig: async () => {
     try {
       const config = await fetchLayerConfig();
+      const fallbackConfig = await loadFallbackLayerConfig();
       const nextLayerGroups = Array.isArray(config?.layerGroups)
         ? config.layerGroups
-        : fallbackLayerGroups;
+        : fallbackConfig.layerGroups;
       const nextLayerDefinitions = Array.isArray(config?.layerDefinitions)
         ? config.layerDefinitions
-        : fallbackLayerDefinitions;
+        : fallbackConfig.layerDefinitions;
 
       set((state) => ({
         layerGroups: nextLayerGroups,

@@ -1,4 +1,3 @@
-import { warningRules as fallbackWarningRules } from "../mock/index.js";
 import { calcEntityDistance, moveBoundary } from "../utils/distance.js";
 
 export const RISK_LEVEL_RANK = {
@@ -16,7 +15,7 @@ const DEFAULT_NONE_LEVEL = {
   suggestion: "当前无明显风险，维持常规巡检。",
 };
 
-let activeWarningRules = fallbackWarningRules;
+let activeWarningRules = [];
 
 export function setWarningRules(rules) {
   if (Array.isArray(rules)) {

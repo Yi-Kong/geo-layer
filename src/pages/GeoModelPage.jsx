@@ -37,34 +37,6 @@ import {
   fetchWorkingFaces,
 } from "../api/geoApi";
 import { useLayerControl } from "../hooks/useLayerControl";
-import {
-  getAbandonedShafts,
-  getAquifers,
-  getBoreholes,
-  getCollapseColumns,
-  getCoalSeams,
-  getFaultInfluenceZones,
-  getFaults,
-  getGasContentPoints,
-  getGasPressurePoints,
-  getGasRichAreas,
-  getGoafAreas,
-  getGoafWaterAreas,
-  getMineInfo,
-  getMeasurePoints,
-  getMiningPaths,
-  getPoorSealedBoreholes,
-  getRiskRanges,
-  getRiskBodies,
-  getSmallMineDamageAreas,
-  getSoftLayers,
-  getStrata,
-  getTunnels,
-  getWarningPoints,
-  getWaterInrushPoints,
-  getWaterRichAreas,
-  getWorkingFaces,
-} from "../services/mockDataService";
 import { setTreatmentMeasures } from "../services/measureService";
 import {
   generateWarningsByAdvance,
@@ -133,52 +105,32 @@ export default function GeoModelPage() {
   const setWarnings = useWarningStore((state) => state.setWarnings);
   const activeWarnings = useWarningStore((state) => state.warnings);
   const loadLayerConfig = useLayerStore((state) => state.loadLayerConfig);
-  const [mineInfo, setMineInfo] = useState(() => getMineInfo());
-  const [strata, setStrata] = useState(() => getStrata());
-  const [coalSeams, setCoalSeams] = useState(() => getCoalSeams());
-  const [boreholes, setBoreholes] = useState(() => getBoreholes());
-  const [faults, setFaults] = useState(() => getFaults());
-  const [collapseColumns, setCollapseColumns] = useState(() =>
-    getCollapseColumns()
-  );
-  const [workingFaces, setWorkingFaces] = useState(() => getWorkingFaces());
-  const [tunnels, setTunnels] = useState(() => getTunnels());
-  const [miningPaths, setMiningPaths] = useState(() => getMiningPaths());
-  const [aquifers, setAquifers] = useState(() => getAquifers());
-  const [goafWaterAreas, setGoafWaterAreas] = useState(() =>
-    getGoafWaterAreas()
-  );
-  const [waterInrushPoints, setWaterInrushPoints] = useState(() =>
-    getWaterInrushPoints()
-  );
-  const [waterRichAreas, setWaterRichAreas] = useState(() =>
-    getWaterRichAreas()
-  );
-  const [gasRichAreas, setGasRichAreas] = useState(() => getGasRichAreas());
-  const [gasContentPoints, setGasContentPoints] = useState(() =>
-    getGasContentPoints()
-  );
-  const [gasPressurePoints, setGasPressurePoints] = useState(() =>
-    getGasPressurePoints()
-  );
-  const [softLayers, setSoftLayers] = useState(() => getSoftLayers());
-  const [smallMineDamageAreas, setSmallMineDamageAreas] = useState(() =>
-    getSmallMineDamageAreas()
-  );
-  const [goafAreas, setGoafAreas] = useState(() => getGoafAreas());
-  const [abandonedShafts, setAbandonedShafts] = useState(() =>
-    getAbandonedShafts()
-  );
-  const [poorSealedBoreholes, setPoorSealedBoreholes] = useState(() =>
-    getPoorSealedBoreholes()
-  );
-  const [faultInfluenceZones, setFaultInfluenceZones] = useState(() =>
-    getFaultInfluenceZones()
-  );
-  const [warningPoints, setWarningPoints] = useState(() => getWarningPoints());
-  const [riskRanges, setRiskRanges] = useState(() => getRiskRanges());
-  const [measurePoints, setMeasurePoints] = useState(() => getMeasurePoints());
-  const [riskBodies, setRiskBodies] = useState(() => getRiskBodies());
+  const [mineInfo, setMineInfo] = useState(null);
+  const [strata, setStrata] = useState([]);
+  const [coalSeams, setCoalSeams] = useState([]);
+  const [boreholes, setBoreholes] = useState([]);
+  const [faults, setFaults] = useState([]);
+  const [collapseColumns, setCollapseColumns] = useState([]);
+  const [workingFaces, setWorkingFaces] = useState([]);
+  const [tunnels, setTunnels] = useState([]);
+  const [miningPaths, setMiningPaths] = useState([]);
+  const [aquifers, setAquifers] = useState([]);
+  const [goafWaterAreas, setGoafWaterAreas] = useState([]);
+  const [waterInrushPoints, setWaterInrushPoints] = useState([]);
+  const [waterRichAreas, setWaterRichAreas] = useState([]);
+  const [gasRichAreas, setGasRichAreas] = useState([]);
+  const [gasContentPoints, setGasContentPoints] = useState([]);
+  const [gasPressurePoints, setGasPressurePoints] = useState([]);
+  const [softLayers, setSoftLayers] = useState([]);
+  const [smallMineDamageAreas, setSmallMineDamageAreas] = useState([]);
+  const [goafAreas, setGoafAreas] = useState([]);
+  const [abandonedShafts, setAbandonedShafts] = useState([]);
+  const [poorSealedBoreholes, setPoorSealedBoreholes] = useState([]);
+  const [faultInfluenceZones, setFaultInfluenceZones] = useState([]);
+  const [warningPoints, setWarningPoints] = useState([]);
+  const [riskRanges, setRiskRanges] = useState([]);
+  const [measurePoints, setMeasurePoints] = useState([]);
+  const [riskBodies, setRiskBodies] = useState([]);
   const defaultWorkingFaceId = getDefaultWorkingFaceId(workingFaces);
   const [advanceDistance, setAdvanceDistance] = useState(
     workingFaces.find((face) => face.id === defaultWorkingFaceId)
@@ -258,6 +210,12 @@ export default function GeoModelPage() {
           return;
         }
 
+        const nextDefaultWorkingFaceId =
+          getDefaultWorkingFaceId(workingFacesData);
+        const nextDefaultWorkingFace = workingFacesData.find(
+          (face) => face.id === nextDefaultWorkingFaceId
+        );
+
         setWarningRules(warningRulesData);
         setTreatmentMeasures(treatmentMeasuresData);
         setMineInfo(mineInfoData);
@@ -286,8 +244,14 @@ export default function GeoModelPage() {
         setRiskRanges(riskRangesData);
         setMeasurePoints(measurePointsData);
         setRiskBodies(riskBodiesData);
+        setSelectedWorkingFaceId(
+          (current) => current || nextDefaultWorkingFaceId
+        );
+        setAdvanceDistance((current) =>
+          current || nextDefaultWorkingFace?.currentAdvance || 0
+        );
       } catch (error) {
-        console.error("Failed to load mock geo data:", error);
+        console.error("Failed to load geo data:", error);
       }
     }
 

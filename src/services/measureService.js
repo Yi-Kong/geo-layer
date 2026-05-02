@@ -1,6 +1,4 @@
-import { treatmentMeasures as fallbackTreatmentMeasures } from "../mock/index.js";
-
-let activeTreatmentMeasures = fallbackTreatmentMeasures;
+let activeTreatmentMeasures = [];
 
 export function setTreatmentMeasures(measures) {
   if (Array.isArray(measures)) {

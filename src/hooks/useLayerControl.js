@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { fetchGeologyLayers } from "../api/geoApi";
+import { ENABLE_API_MOCKS } from "../config/runtime";
 import { LAYER_DATA_URL } from "../data/layers";
 
 export function useLayerControl() {
@@ -36,7 +37,11 @@ export function useLayerControl() {
 
         try {
           data = await fetchGeologyLayers();
-        } catch {
+        } catch (error) {
+          if (!ENABLE_API_MOCKS) {
+            throw error;
+          }
+
           data = await loadFallbackLayerData();
         }
 
