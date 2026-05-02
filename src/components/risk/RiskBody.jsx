@@ -35,12 +35,30 @@ function getBox(points) {
   };
 }
 
+function getBodyBox(body) {
+  if (Array.isArray(body.points) && body.points.length > 0) {
+    return getBox(body.points);
+  }
+
+  if (Array.isArray(body.position) && Array.isArray(body.size)) {
+    return {
+      center: body.position,
+      size: body.size.map((value) => Math.max(1, Number(value) || 1)),
+    };
+  }
+
+  return {
+    center: [0, 0, 0],
+    size: [1, 1, 1],
+  };
+}
+
 export default function RiskBody({ body, color, opacity = 0.45 }) {
   const [hovered, setHovered] = useState(false);
   const selectedObject = useSceneStore((state) => state.selectedObject);
   const setSelectedObject = useSceneStore((state) => state.setSelectedObject);
   const selected = selectedObject?.id === body.id;
-  const box = useMemo(() => getBox(body.points), [body.points]);
+  const box = useMemo(() => getBodyBox(body), [body]);
 
   useCursor(hovered);
 
@@ -48,6 +66,7 @@ export default function RiskBody({ body, color, opacity = 0.45 }) {
     <group>
       <mesh
         position={box.center}
+        rotation={body.rotation || [0, 0, 0]}
         onClick={(event) => {
           event.stopPropagation();
           setSelectedObject(body);

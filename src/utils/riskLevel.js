@@ -16,10 +16,10 @@ export const RISK_LEVEL_LABELS = {
 
 export const RISK_LEVEL_COLORS = {
   none: "#22c55e",
-  low: "#84cc16",
-  medium: "#facc15",
-  high: "#f97316",
-  critical: "#ef4444",
+  low: "#2A9D8F",
+  medium: "#E9C46A",
+  high: "#F4A261",
+  critical: "#E63946",
 };
 
 export function getRiskLevelColor(level) {

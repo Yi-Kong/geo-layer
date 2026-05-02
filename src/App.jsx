@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import Header from "./components/Header";
 import GeoScene from "./components/geo3d/GeoScene";
 import AdvanceSlider from "./components/mining/AdvanceSlider";
 import InfoPanel from "./components/panels/InfoPanel";
@@ -6,17 +7,35 @@ import LayerPanel from "./components/panels/LayerPanel";
 import WarningPanel from "./components/panels/WarningPanel";
 import { useLayerControl } from "./hooks/useLayerControl";
 import {
+  getAbandonedShafts,
+  getAquifers,
+  getBoreholes,
+  getCollapseColumns,
   getCoalSeams,
+  getFaultInfluenceZones,
+  getFaults,
+  getGasContentPoints,
+  getGasPressurePoints,
   getGasRichAreas,
+  getGoafAreas,
   getGoafWaterAreas,
   getMineInfo,
+  getMeasurePoints,
+  getMiningPaths,
+  getPoorSealedBoreholes,
+  getRiskRanges,
   getRiskBodies,
+  getSmallMineDamageAreas,
+  getSoftLayers,
   getStrata,
+  getTunnels,
+  getWarningPoints,
+  getWaterInrushPoints,
   getWaterRichAreas,
   getWorkingFaces,
 } from "./services/mockDataService";
 import { generateWarningsByAdvance } from "./services/warningService";
-import { useSceneStore } from "./store/sceneStore";
+import { useSelectionStore } from "./store/selectionStore";
 import { useWarningStore } from "./store/warningStore";
 
 export default function App() {
@@ -29,16 +48,34 @@ export default function App() {
     setExplode,
     setSelectedLayerId,
   } = useLayerControl();
-  const setSelectedObject = useSceneStore((state) => state.setSelectedObject);
+  const setSelectedObject = useSelectionStore((state) => state.setSelectedObject);
   const setWarnings = useWarningStore((state) => state.setWarnings);
-  const warnings = useWarningStore((state) => state.warnings);
+  const activeWarnings = useWarningStore((state) => state.warnings);
   const mineInfo = useMemo(() => getMineInfo(), []);
   const strata = useMemo(() => getStrata(), []);
   const coalSeams = useMemo(() => getCoalSeams(), []);
+  const boreholes = useMemo(() => getBoreholes(), []);
+  const faults = useMemo(() => getFaults(), []);
+  const collapseColumns = useMemo(() => getCollapseColumns(), []);
   const workingFaces = useMemo(() => getWorkingFaces(), []);
+  const tunnels = useMemo(() => getTunnels(), []);
+  const miningPaths = useMemo(() => getMiningPaths(), []);
+  const aquifers = useMemo(() => getAquifers(), []);
   const goafWaterAreas = useMemo(() => getGoafWaterAreas(), []);
+  const waterInrushPoints = useMemo(() => getWaterInrushPoints(), []);
   const waterRichAreas = useMemo(() => getWaterRichAreas(), []);
   const gasRichAreas = useMemo(() => getGasRichAreas(), []);
+  const gasContentPoints = useMemo(() => getGasContentPoints(), []);
+  const gasPressurePoints = useMemo(() => getGasPressurePoints(), []);
+  const softLayers = useMemo(() => getSoftLayers(), []);
+  const smallMineDamageAreas = useMemo(() => getSmallMineDamageAreas(), []);
+  const goafAreas = useMemo(() => getGoafAreas(), []);
+  const abandonedShafts = useMemo(() => getAbandonedShafts(), []);
+  const poorSealedBoreholes = useMemo(() => getPoorSealedBoreholes(), []);
+  const faultInfluenceZones = useMemo(() => getFaultInfluenceZones(), []);
+  const warningPoints = useMemo(() => getWarningPoints(), []);
+  const riskRanges = useMemo(() => getRiskRanges(), []);
+  const measurePoints = useMemo(() => getMeasurePoints(), []);
   const riskBodies = useMemo(() => getRiskBodies(), []);
   const [advanceDistance, setAdvanceDistance] = useState(
     workingFaces[0]?.currentAdvance || 0
@@ -81,22 +118,34 @@ export default function App() {
         onSelectLayer={handleSelectLegacyLayer}
         strata={strata}
         coalSeams={coalSeams}
+        boreholes={boreholes}
+        faults={faults}
+        collapseColumns={collapseColumns}
+        aquifers={aquifers}
         workingFaces={workingFaces}
+        tunnels={tunnels}
+        miningPaths={miningPaths}
         goafWaterAreas={goafWaterAreas}
+        waterInrushPoints={waterInrushPoints}
         waterRichAreas={waterRichAreas}
         gasRichAreas={gasRichAreas}
-        warnings={warnings}
+        gasContentPoints={gasContentPoints}
+        gasPressurePoints={gasPressurePoints}
+        softLayers={softLayers}
+        smallMineDamageAreas={smallMineDamageAreas}
+        goafAreas={goafAreas}
+        abandonedShafts={abandonedShafts}
+        poorSealedBoreholes={poorSealedBoreholes}
+        faultInfluenceZones={faultInfluenceZones}
+        warningPoints={warningPoints}
+        riskRanges={riskRanges}
+        measurePoints={measurePoints}
+        generatedWarnings={activeWarnings}
+        riskBodies={riskBodies}
         advanceDistance={advanceDistance}
       />
 
-      <div className="pointer-events-none fixed left-1/2 top-5 z-20 hidden -translate-x-1/2 border border-white/10 bg-slate-950/70 px-4 py-2 text-center text-slate-100 shadow-[0_12px_30px_rgba(0,0,0,0.26)] backdrop-blur-md lg:block">
-        <div className="text-sm font-semibold text-cyan-100">
-          基于模拟数据的煤矿透明地质三维可视化与风险预警系统
-        </div>
-        <div className="mt-1 text-[11px] text-slate-400">
-          {mineInfo.location} / {mineInfo.coordinateSystem}
-        </div>
-      </div>
+      <Header mineInfo={mineInfo} />
 
       <LayerPanel
         mineInfo={mineInfo}

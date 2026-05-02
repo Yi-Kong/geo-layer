@@ -5,18 +5,49 @@ import {
   OrbitControls,
 } from "@react-three/drei";
 import GeoLayerModel from "./GeoLayerModel";
-import CoalSeam from "../geology/CoalSeam";
+import BoreholeLayer from "../geology/BoreholeLayer";
+import CoalSeamLayer from "../geology/CoalSeamLayer";
+import CollapseColumnLayer from "../geology/CollapseColumnLayer";
+import FaultLayer from "../geology/FaultLayer";
+import HiddenHazardLayer from "../geology/HiddenHazardLayer";
 import StrataLayer from "../geology/StrataLayer";
+import AquiferLayer from "../hydrology/AquiferLayer";
+import GoafWaterLayer from "../hydrology/GoafWaterLayer";
+import WaterInrushPointLayer from "../hydrology/WaterInrushPointLayer";
+import WaterRichLayer from "../hydrology/WaterRichLayer";
 import DistanceLine from "../mining/DistanceLine";
-import WorkingFace from "../mining/WorkingFace";
-import GasRichArea from "../risk/GasRichArea";
-import GoafWaterArea from "../risk/GoafWaterArea";
-import WaterRichArea from "../risk/WaterRichArea";
+import MiningPathLayer from "../mining/MiningPathLayer";
+import TunnelLayer from "../mining/TunnelLayer";
+import WorkingFaceLayer from "../mining/WorkingFaceLayer";
+import GasMeasurePointLayer from "../gas/GasMeasurePointLayer";
+import GasRichLayer from "../gas/GasRichLayer";
+import SoftLayer from "../gas/SoftLayer";
+import MeasurePointLayer from "../warning/MeasurePointLayer";
+import RiskRangeLayer from "../warning/RiskRangeLayer";
+import WarningPointLayer from "../warning/WarningPointLayer";
 import { useLayerStore } from "../../store/layerStore";
-import { getCenter, moveBoundary } from "../../utils/distance";
+import { useSelectionStore } from "../../store/selectionStore";
+import { moveBoundary } from "../../utils/distance";
+
+function getBodyCenter(body) {
+  if (Array.isArray(body.position)) {
+    return body.position;
+  }
+
+  if (!Array.isArray(body.points) || body.points.length === 0) {
+    return [0, 0, 0];
+  }
+
+  const total = body.points.reduce(
+    (sum, point) => [sum[0] + point[0], sum[1] + point[1], sum[2] + point[2]],
+    [0, 0, 0]
+  );
+
+  return total.map((value) => value / body.points.length);
+}
 
 function WarningMarker({ body, color }) {
-  const center = getCenter(body.points);
+  const center = getBodyCenter(body);
 
   return (
     <mesh position={[center[0], center[1] + 10, center[2]]}>
@@ -34,21 +65,45 @@ export default function GeoScene({
   onSelectLayer,
   strata = [],
   coalSeams = [],
+  boreholes = [],
+  faults = [],
+  collapseColumns = [],
+  aquifers = [],
   workingFaces = [],
+  tunnels = [],
+  miningPaths = [],
   goafWaterAreas = [],
+  waterInrushPoints = [],
   waterRichAreas = [],
   gasRichAreas = [],
-  warnings = [],
+  gasContentPoints = [],
+  gasPressurePoints = [],
+  softLayers = [],
+  smallMineDamageAreas = [],
+  goafAreas = [],
+  abandonedShafts = [],
+  poorSealedBoreholes = [],
+  faultInfluenceZones = [],
+  warningPoints = [],
+  riskRanges = [],
+  measurePoints = [],
+  generatedWarnings = [],
+  riskBodies = [],
   advanceDistance = 0,
 }) {
   const layers = useLayerStore((state) => state.layers);
   const opacities = useLayerStore((state) => state.opacities);
-  const riskBodies = [...goafWaterAreas, ...waterRichAreas, ...gasRichAreas];
+  const clearSelection = useSelectionStore((state) => state.clearSelection);
+  const sceneRiskBodies =
+    riskBodies.length > 0
+      ? riskBodies
+      : [...goafWaterAreas, ...waterRichAreas, ...gasRichAreas];
 
   return (
     <Canvas
       camera={{ position: [430, 245, 430], fov: 42, near: 1, far: 1600 }}
       gl={{ antialias: true, alpha: true }}
+      onPointerMissed={clearSelection}
     >
       <color attach="background" args={["#050910"]} />
       <fog attach="fog" args={["#050910", 560, 1220]} />
@@ -82,60 +137,148 @@ export default function GeoScene({
                   explode={explode}
                   selectedLayerId={selectedLayerId}
                   onSelectLayer={onSelectLayer}
+                  opacity={opacities.strata}
                 />
               </group>
             )}
           </>
         )}
 
-        {layers.coalSeams &&
-          coalSeams.map((seam) => (
-            <CoalSeam key={seam.id} seam={seam} opacity={opacities.coalSeams} />
-          ))}
+        {layers.coalSeams && (
+          <CoalSeamLayer items={coalSeams} opacity={opacities.coalSeams} />
+        )}
 
-        {layers.workingFaces &&
-          workingFaces.map((face) => (
-            <WorkingFace
-              key={face.id}
-              face={face}
-              advanceDistance={advanceDistance}
-              opacity={opacities.workingFaces}
-            />
-          ))}
+        {layers.boreholes && (
+          <BoreholeLayer items={boreholes} opacity={opacities.boreholes} />
+        )}
 
-        {layers.goafWaterAreas &&
-          goafWaterAreas.map((area) => (
-            <GoafWaterArea
-              key={area.id}
-              area={area}
-              opacity={opacities.goafWaterAreas}
-            />
-          ))}
+        {layers.faults && (
+          <FaultLayer items={faults} opacity={opacities.faults} />
+        )}
 
-        {layers.waterRichAreas &&
-          waterRichAreas.map((area) => (
-            <WaterRichArea
-              key={area.id}
-              area={area}
-              opacity={opacities.waterRichAreas}
-            />
-          ))}
+        {layers.collapseColumns && (
+          <CollapseColumnLayer
+            items={collapseColumns}
+            opacity={opacities.collapseColumns}
+          />
+        )}
 
-        {layers.gasRichAreas &&
-          gasRichAreas.map((area) => (
-            <GasRichArea
-              key={area.id}
-              area={area}
-              opacity={opacities.gasRichAreas}
-            />
-          ))}
+        {layers.aquifers && (
+          <AquiferLayer items={aquifers} opacity={opacities.aquifers} />
+        )}
+
+        {layers.tunnels && (
+          <TunnelLayer items={tunnels} opacity={opacities.tunnels} />
+        )}
+
+        {layers.workingFaces && (
+          <WorkingFaceLayer
+            items={workingFaces}
+            advanceDistance={advanceDistance}
+            opacity={opacities.workingFaces}
+          />
+        )}
+
+        {layers.miningPaths && (
+          <MiningPathLayer items={miningPaths} opacity={opacities.miningPaths} />
+        )}
+
+        {layers.goafWaterAreas && (
+          <GoafWaterLayer
+            items={goafWaterAreas}
+            opacity={opacities.goafWaterAreas}
+          />
+        )}
+
+        {layers.waterRichAreas && (
+          <WaterRichLayer
+            items={waterRichAreas}
+            opacity={opacities.waterRichAreas}
+          />
+        )}
+
+        {layers.waterInrushPoints && (
+          <WaterInrushPointLayer
+            items={waterInrushPoints}
+            opacity={opacities.waterInrushPoints}
+          />
+        )}
+
+        {layers.gasRichAreas && (
+          <GasRichLayer items={gasRichAreas} opacity={opacities.gasRichAreas} />
+        )}
+
+        {(layers.gasContentPoints || layers.gasPressurePoints) && (
+          <GasMeasurePointLayer
+            contentPoints={layers.gasContentPoints ? gasContentPoints : []}
+            pressurePoints={layers.gasPressurePoints ? gasPressurePoints : []}
+            contentOpacity={opacities.gasContentPoints}
+            pressureOpacity={opacities.gasPressurePoints}
+          />
+        )}
+
+        {layers.softLayers && (
+          <SoftLayer items={softLayers} opacity={opacities.softLayers} />
+        )}
+
+        {layers.smallMineDamageAreas && (
+          <HiddenHazardLayer
+            items={smallMineDamageAreas}
+            opacity={opacities.smallMineDamageAreas}
+          />
+        )}
+
+        {layers.goafAreas && (
+          <HiddenHazardLayer items={goafAreas} opacity={opacities.goafAreas} />
+        )}
+
+        {layers.abandonedShafts && (
+          <BoreholeLayer
+            items={abandonedShafts}
+            opacity={opacities.abandonedShafts}
+            color="#FDE68A"
+            radius={5}
+          />
+        )}
+
+        {layers.poorSealedBoreholes && (
+          <BoreholeLayer
+            items={poorSealedBoreholes}
+            opacity={opacities.poorSealedBoreholes}
+            color="#FBBF24"
+            radius={4}
+          />
+        )}
+
+        {layers.faultInfluenceZones && (
+          <HiddenHazardLayer
+            items={faultInfluenceZones}
+            opacity={opacities.faultInfluenceZones}
+          />
+        )}
+
+        {layers.riskRanges && (
+          <RiskRangeLayer items={riskRanges} opacity={opacities.riskRanges} />
+        )}
+
+        {layers.measures && (
+          <MeasurePointLayer items={measurePoints} opacity={opacities.measures} />
+        )}
 
         {layers.warnings &&
-          warnings.map((warning) => {
+          warningPoints.length > 0 && (
+            <WarningPointLayer
+              items={warningPoints}
+              opacity={opacities.warnings}
+            />
+          )}
+
+        {layers.warnings &&
+          generatedWarnings.map((warning) => {
             const workingFace = workingFaces.find(
               (face) => face.id === warning.workingFaceId
             );
-            const riskBody = riskBodies.find(
+            const riskBody = sceneRiskBodies.find(
               (body) => body.id === warning.riskBodyId
             );
 

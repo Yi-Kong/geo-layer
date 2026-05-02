@@ -38,6 +38,7 @@ function GeologicalLayer({
   explode,
   selected,
   onSelect,
+  opacity,
 }) {
   const [hovered, setHovered] = useState(false);
 
@@ -93,7 +94,7 @@ function GeologicalLayer({
             roughness={0.9}
             metalness={0.03}
             transparent
-            opacity={selected ? 1 : 0.94}
+            opacity={selected ? Math.min(1, opacity + 0.24) : opacity}
             emissive={selected ? "#ffffff" : "#000000"}
             emissiveIntensity={selected ? 0.12 : 0}
             side={THREE.DoubleSide}
@@ -105,6 +106,8 @@ function GeologicalLayer({
             color={selected ? lightenColor(layer.color, 0.18) : layer.color}
             roughness={0.82}
             metalness={0.02}
+            transparent
+            opacity={selected ? Math.min(1, opacity + 0.2) : opacity}
             emissive={selected ? "#ffffff" : "#000000"}
             emissiveIntensity={selected ? 0.08 : 0}
             side={THREE.DoubleSide}
@@ -116,6 +119,8 @@ function GeologicalLayer({
             color={darkenColor(layer.color, 0.12)}
             roughness={0.92}
             metalness={0.01}
+            transparent
+            opacity={Math.min(1, opacity + 0.08)}
             side={THREE.DoubleSide}
           />
         </mesh>
@@ -218,6 +223,7 @@ export default function GeoLayerModel({
   explode,
   selectedLayerId,
   onSelectLayer,
+  opacity = 0.78,
 }) {
   const points = useMemo(() => createFootprint(8, 4.6, 22), []);
   const layers = useMemo(() => buildLayerStack(layerData), [layerData]);
@@ -235,6 +241,7 @@ export default function GeoLayerModel({
             explode={explode}
             selected={selectedLayerId === layer.id}
             onSelect={onSelectLayer}
+            opacity={opacity}
           />
         ))}
     </group>

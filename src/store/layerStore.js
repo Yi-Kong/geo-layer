@@ -1,43 +1,98 @@
 import { create } from "zustand";
+import { layerDefinitions, layerGroups } from "../mock/layers.js";
+
+function clampOpacity(value) {
+  const numberValue = Number(value);
+
+  if (!Number.isFinite(numberValue)) {
+    return 1;
+  }
+
+  return Math.min(1, Math.max(0.05, numberValue));
+}
+
+const initialLayers = Object.fromEntries(
+  layerDefinitions.map((layer) => [layer.id, layer.defaultVisible !== false])
+);
+
+const initialOpacities = Object.fromEntries(
+  layerDefinitions.map((layer) => [layer.id, layer.opacity ?? 1])
+);
+
+function setGroupVisibility(state, groupId, visible) {
+  const nextLayers = { ...state.layers };
+
+  layerDefinitions
+    .filter((layer) => layer.groupId === groupId)
+    .forEach((layer) => {
+      nextLayers[layer.id] = visible;
+    });
+
+  return nextLayers;
+}
 
 export const useLayerStore = create((set) => ({
-  layers: {
-    strata: true,
-    coalSeams: true,
-    workingFaces: true,
-    goafWaterAreas: true,
-    waterRichAreas: true,
-    gasRichAreas: true,
-    warnings: true,
-  },
-  opacities: {
-    strata: 0.38,
-    coalSeams: 0.72,
-    workingFaces: 0.72,
-    goafWaterAreas: 0.48,
-    waterRichAreas: 0.32,
-    gasRichAreas: 0.44,
-    warnings: 1,
-  },
-  toggleLayer: (layerName) =>
+  layerGroups,
+  layerDefinitions,
+  layers: initialLayers,
+  opacities: initialOpacities,
+  selectedLayerId: null,
+
+  toggleLayer: (layerId) =>
     set((state) => ({
       layers: {
         ...state.layers,
-        [layerName]: !state.layers[layerName],
+        [layerId]: !state.layers[layerId],
       },
+      selectedLayerId: layerId,
     })),
-  setLayerVisible: (layerName, visible) =>
+
+  setLayerVisible: (layerId, visible) =>
     set((state) => ({
       layers: {
         ...state.layers,
-        [layerName]: visible,
+        [layerId]: Boolean(visible),
       },
+      selectedLayerId: layerId,
     })),
-  setOpacity: (layerName, value) =>
+
+  setLayerOpacity: (layerId, opacity) =>
     set((state) => ({
       opacities: {
         ...state.opacities,
-        [layerName]: Number(value),
+        [layerId]: clampOpacity(opacity),
       },
+      selectedLayerId: layerId,
     })),
+
+  setOpacity: (layerId, opacity) =>
+    set((state) => ({
+      opacities: {
+        ...state.opacities,
+        [layerId]: clampOpacity(opacity),
+      },
+      selectedLayerId: layerId,
+    })),
+
+  showGroup: (groupId) =>
+    set((state) => ({
+      layers: setGroupVisibility(state, groupId, true),
+    })),
+
+  hideGroup: (groupId) =>
+    set((state) => ({
+      layers: setGroupVisibility(state, groupId, false),
+    })),
+
+  showAllLayers: () =>
+    set(() => ({
+      layers: Object.fromEntries(layerDefinitions.map((layer) => [layer.id, true])),
+    })),
+
+  hideAllLayers: () =>
+    set(() => ({
+      layers: Object.fromEntries(layerDefinitions.map((layer) => [layer.id, false])),
+    })),
+
+  selectLayer: (layerId) => set({ selectedLayerId: layerId }),
 }));
