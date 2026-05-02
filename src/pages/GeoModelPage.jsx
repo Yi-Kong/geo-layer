@@ -20,7 +20,7 @@ import {
   fetchGoafAreas,
   fetchGoafWaterAreas,
   fetchMeasurePoints,
-  fetchMineInfo,
+  fetchMine,
   fetchMiningPaths,
   fetchPoorSealedBoreholes,
   fetchRiskBodies,
@@ -29,6 +29,8 @@ import {
   fetchSoftLayers,
   fetchStrata,
   fetchTunnels,
+  fetchTreatmentMeasures,
+  fetchWarningRules,
   fetchWarnings,
   fetchWaterInrushPoints,
   fetchWaterRichAreas,
@@ -63,7 +65,12 @@ import {
   getWaterRichAreas,
   getWorkingFaces,
 } from "../services/mockDataService";
-import { generateWarningsByAdvance } from "../services/warningService";
+import { setTreatmentMeasures } from "../services/measureService";
+import {
+  generateWarningsByAdvance,
+  setWarningRules,
+} from "../services/warningService";
+import { useLayerStore } from "../store/layerStore";
 import { useSelectionStore } from "../store/selectionStore";
 import { useWarningStore } from "../store/warningStore";
 
@@ -125,6 +132,7 @@ export default function GeoModelPage() {
   const selectedObject = useSelectionStore((state) => state.selectedObject);
   const setWarnings = useWarningStore((state) => state.setWarnings);
   const activeWarnings = useWarningStore((state) => state.warnings);
+  const loadLayerConfig = useLayerStore((state) => state.loadLayerConfig);
   const [mineInfo, setMineInfo] = useState(() => getMineInfo());
   const [strata, setStrata] = useState(() => getStrata());
   const [coalSeams, setCoalSeams] = useState(() => getCoalSeams());
@@ -213,8 +221,10 @@ export default function GeoModelPage() {
           riskRangesData,
           measurePointsData,
           riskBodiesData,
+          warningRulesData,
+          treatmentMeasuresData,
         ] = await Promise.all([
-          fetchMineInfo(),
+          fetchMine(),
           fetchStrata(),
           fetchCoalSeams(),
           fetchBoreholes(),
@@ -240,12 +250,16 @@ export default function GeoModelPage() {
           fetchRiskRanges(),
           fetchMeasurePoints(),
           fetchRiskBodies(),
+          fetchWarningRules(),
+          fetchTreatmentMeasures(),
         ]);
 
         if (cancelled) {
           return;
         }
 
+        setWarningRules(warningRulesData);
+        setTreatmentMeasures(treatmentMeasuresData);
         setMineInfo(mineInfoData);
         setStrata(strataData);
         setCoalSeams(coalSeamsData);
@@ -277,12 +291,13 @@ export default function GeoModelPage() {
       }
     }
 
+    loadLayerConfig();
     loadGeoData();
 
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [loadLayerConfig]);
 
   const selectedSceneWorkingFaceId =
     selectedObject?.type === "working_face" ? selectedObject.id : "";

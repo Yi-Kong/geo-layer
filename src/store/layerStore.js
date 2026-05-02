@@ -1,5 +1,9 @@
 import { create } from "zustand";
-import { layerDefinitions, layerGroups } from "../mock/layers.js";
+import { fetchLayerConfig } from "../api/geoApi";
+import {
+  layerDefinitions as fallbackLayerDefinitions,
+  layerGroups as fallbackLayerGroups,
+} from "../mock/layers.js";
 
 function clampOpacity(value) {
   const numberValue = Number(value);
@@ -12,17 +16,54 @@ function clampOpacity(value) {
 }
 
 const initialLayers = Object.fromEntries(
-  layerDefinitions.map((layer) => [layer.id, layer.defaultVisible !== false])
+  fallbackLayerDefinitions.map((layer) => [
+    layer.id,
+    layer.defaultVisible !== false,
+  ])
 );
 
 const initialOpacities = Object.fromEntries(
-  layerDefinitions.map((layer) => [layer.id, layer.opacity ?? 1])
+  fallbackLayerDefinitions.map((layer) => [layer.id, layer.opacity ?? 1])
 );
+
+function getLayerVisibility(layer, previousLayers = {}) {
+  if (Object.prototype.hasOwnProperty.call(previousLayers, layer.id)) {
+    return previousLayers[layer.id];
+  }
+
+  return layer.defaultVisible !== false;
+}
+
+function getLayerOpacity(layer, previousOpacities = {}) {
+  if (Object.prototype.hasOwnProperty.call(previousOpacities, layer.id)) {
+    return previousOpacities[layer.id];
+  }
+
+  return layer.opacity ?? 1;
+}
+
+function buildLayerVisibility(layerDefinitions, previousLayers) {
+  return Object.fromEntries(
+    layerDefinitions.map((layer) => [
+      layer.id,
+      getLayerVisibility(layer, previousLayers),
+    ])
+  );
+}
+
+function buildLayerOpacities(layerDefinitions, previousOpacities) {
+  return Object.fromEntries(
+    layerDefinitions.map((layer) => [
+      layer.id,
+      getLayerOpacity(layer, previousOpacities),
+    ])
+  );
+}
 
 function setGroupVisibility(state, groupId, visible) {
   const nextLayers = { ...state.layers };
 
-  layerDefinitions
+  state.layerDefinitions
     .filter((layer) => layer.groupId === groupId)
     .forEach((layer) => {
       nextLayers[layer.id] = visible;
@@ -32,11 +73,32 @@ function setGroupVisibility(state, groupId, visible) {
 }
 
 export const useLayerStore = create((set) => ({
-  layerGroups,
-  layerDefinitions,
+  layerGroups: fallbackLayerGroups,
+  layerDefinitions: fallbackLayerDefinitions,
   layers: initialLayers,
   opacities: initialOpacities,
   selectedLayerId: null,
+
+  loadLayerConfig: async () => {
+    try {
+      const config = await fetchLayerConfig();
+      const nextLayerGroups = Array.isArray(config?.layerGroups)
+        ? config.layerGroups
+        : fallbackLayerGroups;
+      const nextLayerDefinitions = Array.isArray(config?.layerDefinitions)
+        ? config.layerDefinitions
+        : fallbackLayerDefinitions;
+
+      set((state) => ({
+        layerGroups: nextLayerGroups,
+        layerDefinitions: nextLayerDefinitions,
+        layers: buildLayerVisibility(nextLayerDefinitions, state.layers),
+        opacities: buildLayerOpacities(nextLayerDefinitions, state.opacities),
+      }));
+    } catch (error) {
+      console.error("Failed to load layer config:", error);
+    }
+  },
 
   toggleLayer: (layerId) =>
     set((state) => ({
@@ -85,13 +147,17 @@ export const useLayerStore = create((set) => ({
     })),
 
   showAllLayers: () =>
-    set(() => ({
-      layers: Object.fromEntries(layerDefinitions.map((layer) => [layer.id, true])),
+    set((state) => ({
+      layers: Object.fromEntries(
+        state.layerDefinitions.map((layer) => [layer.id, true])
+      ),
     })),
 
   hideAllLayers: () =>
-    set(() => ({
-      layers: Object.fromEntries(layerDefinitions.map((layer) => [layer.id, false])),
+    set((state) => ({
+      layers: Object.fromEntries(
+        state.layerDefinitions.map((layer) => [layer.id, false])
+      ),
     })),
 
   selectLayer: (layerId) => set({ selectedLayerId: layerId }),

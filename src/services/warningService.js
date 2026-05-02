@@ -1,4 +1,4 @@
-import { warningRules } from "../mock/index.js";
+import { warningRules as fallbackWarningRules } from "../mock/index.js";
 import { calcEntityDistance, moveBoundary } from "../utils/distance.js";
 
 export const RISK_LEVEL_RANK = {
@@ -15,6 +15,14 @@ const DEFAULT_NONE_LEVEL = {
   color: "#22c55e",
   suggestion: "当前无明显风险，维持常规巡检。",
 };
+
+let activeWarningRules = fallbackWarningRules;
+
+export function setWarningRules(rules) {
+  if (Array.isArray(rules)) {
+    activeWarningRules = structuredClone(rules);
+  }
+}
 
 function normalizeRiskType(riskType) {
   switch (riskType) {
@@ -37,6 +45,7 @@ function normalizeRiskType(riskType) {
 
 function getRuleByRiskType(riskType) {
   const normalizedRiskType = normalizeRiskType(riskType);
+  const warningRules = activeWarningRules;
 
   return (
     warningRules.find((rule) => rule.riskType === normalizedRiskType) ||
@@ -88,6 +97,10 @@ function buildReason(workingFace, riskBody, distance, level) {
 function getDistanceRuleBound(value, fallback) {
   if (value === Infinity) {
     return Infinity;
+  }
+
+  if (value == null) {
+    return fallback;
   }
 
   const next = Number(value);

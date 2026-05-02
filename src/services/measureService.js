@@ -1,8 +1,16 @@
-import { treatmentMeasures } from "../mock/index.js";
+import { treatmentMeasures as fallbackTreatmentMeasures } from "../mock/index.js";
+
+let activeTreatmentMeasures = fallbackTreatmentMeasures;
+
+export function setTreatmentMeasures(measures) {
+  if (Array.isArray(measures)) {
+    activeTreatmentMeasures = structuredClone(measures);
+  }
+}
 
 export function getMeasuresByRiskType(riskType) {
-  return treatmentMeasures.filter((measure) =>
-    measure.riskTypes.includes(riskType)
+  return activeTreatmentMeasures.filter((measure) =>
+    measure.riskTypes?.includes(riskType)
   );
 }
 
