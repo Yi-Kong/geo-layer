@@ -16,9 +16,14 @@ function InfoRow({ label, value }) {
   );
 }
 
-export default function InfoPanel({ coalSeams = [] }) {
+export default function InfoPanel({ coalSeams = [], onClearSelection }) {
   const selectedObject = useSelectionStore((state) => state.selectedObject);
   const clearSelection = useSelectionStore((state) => state.clearSelection);
+
+  function handleClearSelection() {
+    clearSelection();
+    onClearSelection?.();
+  }
 
   if (!selectedObject) {
     return (
@@ -43,7 +48,7 @@ export default function InfoPanel({ coalSeams = [] }) {
         </div>
         <button
           className="cursor-pointer border border-white/10 px-2 py-1 text-xs text-slate-300 hover:border-cyan-300/40 hover:text-cyan-100"
-          onClick={clearSelection}
+          onClick={handleClearSelection}
         >
           清除
         </button>

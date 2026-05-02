@@ -1,3 +1,4 @@
+import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
 import {
   GizmoHelper,
@@ -30,6 +31,10 @@ import { useSelectionStore } from "../../store/selectionStore";
 import { moveBoundary } from "../../utils/distance";
 
 function getBodyCenter(body) {
+  if (!body) {
+    return [0, 0, 0];
+  }
+
   if (Array.isArray(body.position)) {
     return body.position;
   }
@@ -46,6 +51,18 @@ function getBodyCenter(body) {
   return total.map((value) => value / body.points.length);
 }
 
+function getHighlightRadius(body) {
+  if (!Array.isArray(body?.size)) {
+    return 14;
+  }
+
+  const maxSize = Math.max(
+    ...body.size.map((value) => (Number.isFinite(Number(value)) ? Number(value) : 0))
+  );
+
+  return Math.max(14, Math.min(34, maxSize * 0.22));
+}
+
 function WarningMarker({ body, color }) {
   const center = getBodyCenter(body);
 
@@ -54,6 +71,29 @@ function WarningMarker({ body, color }) {
       <sphereGeometry args={[8, 18, 18]} />
       <meshBasicMaterial color={color} transparent opacity={0.92} />
     </mesh>
+  );
+}
+
+function RiskBodyHighlight({ body, color = "#facc15" }) {
+  const center = getBodyCenter(body);
+  const radius = getHighlightRadius(body);
+
+  return (
+    <group position={[center[0], center[1] + radius * 0.45 + 12, center[2]]}>
+      <mesh>
+        <sphereGeometry args={[radius, 24, 24]} />
+        <meshBasicMaterial color={color} transparent opacity={0.28} />
+      </mesh>
+      <mesh rotation={[-Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[radius * 1.15, radius * 1.45, 40]} />
+        <meshBasicMaterial
+          color={color}
+          transparent
+          opacity={0.88}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+    </group>
   );
 }
 
@@ -90,6 +130,9 @@ export default function GeoScene({
   generatedWarnings = [],
   riskBodies = [],
   advanceDistance = 0,
+  selectedRiskBodyId,
+  highlightedRiskBodyId,
+  onClearSelection,
 }) {
   const layers = useLayerStore((state) => state.layers);
   const opacities = useLayerStore((state) => state.opacities);
@@ -98,12 +141,22 @@ export default function GeoScene({
     riskBodies.length > 0
       ? riskBodies
       : [...goafWaterAreas, ...waterRichAreas, ...gasRichAreas];
+  const activeHighlightedRiskBodyId = highlightedRiskBodyId || selectedRiskBodyId;
+  const highlightedRiskBody = sceneRiskBodies.find(
+    (body) => body.id === activeHighlightedRiskBodyId
+  );
+  const highlightedWarning = generatedWarnings.find(
+    (warning) => warning.riskBodyId === activeHighlightedRiskBodyId
+  );
 
   return (
     <Canvas
       camera={{ position: [430, 245, 430], fov: 42, near: 1, far: 1600 }}
       gl={{ antialias: true, alpha: true }}
-      onPointerMissed={clearSelection}
+      onPointerMissed={() => {
+        clearSelection();
+        onClearSelection?.();
+      }}
     >
       <color attach="background" args={["#050910"]} />
       <fog attach="fog" args={["#050910", 560, 1220]} />
@@ -300,10 +353,18 @@ export default function GeoScene({
                   }}
                   to={riskBody}
                   color={warning.color}
+                  distance={warning.distance}
                 />
               </group>
             );
           })}
+
+        {highlightedRiskBody && (
+          <RiskBodyHighlight
+            body={highlightedRiskBody}
+            color={highlightedWarning?.color || "#facc15"}
+          />
+        )}
       </group>
 
       <OrbitControls

@@ -4,10 +4,18 @@ function toPoint3D(point) {
   }
 
   if (Array.isArray(point)) {
-    return [Number(point[0]), Number(point[1]), Number(point[2])];
+    return [
+      Number.isFinite(Number(point[0])) ? Number(point[0]) : 0,
+      Number.isFinite(Number(point[1])) ? Number(point[1]) : 0,
+      Number.isFinite(Number(point[2])) ? Number(point[2]) : 0,
+    ];
   }
 
-  return [Number(point.x), Number(point.y), Number(point.z)];
+  return [
+    Number.isFinite(Number(point.x)) ? Number(point.x) : 0,
+    Number.isFinite(Number(point.y)) ? Number(point.y) : 0,
+    Number.isFinite(Number(point.z)) ? Number(point.z) : 0,
+  ];
 }
 
 function getEntityPoints(entity) {
@@ -139,12 +147,27 @@ export function calcEntityDistance(entityA, entityB) {
  * @returns {number[][]}
  */
 export function moveBoundary(boundary, direction, distance) {
-  const length = Math.hypot(direction[0], direction[1], direction[2]) || 1;
-  const unit = direction.map((value) => value / length);
+  if (!Array.isArray(boundary)) {
+    return [];
+  }
 
-  return boundary.map((point) => [
-    point[0] + unit[0] * distance,
-    point[1] + unit[1] * distance,
-    point[2] + unit[2] * distance,
-  ]);
+  const vector = Array.isArray(direction) ? direction : [0, 0, 0];
+  const safeVector = [
+    Number.isFinite(Number(vector[0])) ? Number(vector[0]) : 0,
+    Number.isFinite(Number(vector[1])) ? Number(vector[1]) : 0,
+    Number.isFinite(Number(vector[2])) ? Number(vector[2]) : 0,
+  ];
+  const safeDistance = Number.isFinite(Number(distance)) ? Number(distance) : 0;
+  const length = Math.hypot(...safeVector) || 1;
+  const unit = safeVector.map((value) => value / length);
+
+  return boundary.map((point) => {
+    const point3D = toPoint3D(point);
+
+    return [
+      point3D[0] + unit[0] * safeDistance,
+      point3D[1] + unit[1] * safeDistance,
+      point3D[2] + unit[2] * safeDistance,
+    ];
+  });
 }

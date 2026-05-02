@@ -59,6 +59,7 @@ export default function GeoModelPage() {
     setSelectedLayerId,
   } = useLayerControl();
   const setSelectedObject = useSelectionStore((state) => state.setSelectedObject);
+  const selectedObject = useSelectionStore((state) => state.selectedObject);
   const setWarnings = useWarningStore((state) => state.setWarnings);
   const activeWarnings = useWarningStore((state) => state.warnings);
   const mineInfo = useMemo(() => getMineInfo(), []);
@@ -95,6 +96,19 @@ export default function GeoModelPage() {
   const [selectedWorkingFaceId, setSelectedWorkingFaceId] = useState(
     defaultWorkingFaceId
   );
+  const [selectedRiskBodyId, setSelectedRiskBodyId] = useState(null);
+  const selectedObjectRiskBodyId = useMemo(() => {
+    if (!selectedObject?.id) {
+      return null;
+    }
+
+    return riskBodies.some((riskBody) => riskBody.id === selectedObject.id)
+      ? selectedObject.id
+      : null;
+  }, [riskBodies, selectedObject]);
+  const effectiveSelectedRiskBodyId = selectedObject
+    ? selectedObjectRiskBodyId
+    : selectedRiskBodyId;
 
   const handleWorkingFaceChange = useCallback(
     (workingFaceId) => {
@@ -103,6 +117,7 @@ export default function GeoModelPage() {
       );
 
       setSelectedWorkingFaceId(workingFaceId);
+      setSelectedRiskBodyId(null);
       setAdvanceDistance(nextWorkingFace?.currentAdvance || 0);
     },
     [workingFaces]
@@ -125,8 +140,17 @@ export default function GeoModelPage() {
     );
   }, [advanceDistance, riskBodies, setWarnings, workingFaces]);
 
+  const handleSelectWarning = useCallback((warning) => {
+    setSelectedRiskBodyId(warning?.riskBodyId || null);
+  }, []);
+
+  const handleClearSelection = useCallback(() => {
+    setSelectedRiskBodyId(null);
+  }, []);
+
   function handleSelectLegacyLayer(layerId) {
     setSelectedLayerId(layerId);
+    setSelectedRiskBodyId(null);
 
     const layer = layerData.find((item) => item.id === layerId);
 
@@ -181,6 +205,8 @@ export default function GeoModelPage() {
         generatedWarnings={activeWarnings}
         riskBodies={riskBodies}
         advanceDistance={advanceDistance}
+        selectedRiskBodyId={effectiveSelectedRiskBodyId}
+        onClearSelection={handleClearSelection}
       />
 
       <Header mineInfo={mineInfo} />
@@ -191,11 +217,17 @@ export default function GeoModelPage() {
         onExplodeChange={setExplode}
         legacyLoading={loading}
       />
-      <InfoPanel coalSeams={coalSeams} />
+      <InfoPanel coalSeams={coalSeams} onClearSelection={handleClearSelection} />
       <WarningPanel
         workingFaces={workingFaces}
         riskBodies={riskBodies}
         advanceDistance={advanceDistance}
+        selectedWorkingFaceId={selectedWorkingFaceId}
+        selectedRiskBodyId={effectiveSelectedRiskBodyId}
+        onSelectWarning={handleSelectWarning}
+        onSelectRiskBody={(riskBodyId) =>
+          setSelectedRiskBodyId(riskBodyId || null)
+        }
       />
       <AdvanceSlider
         workingFaces={workingFaces}
