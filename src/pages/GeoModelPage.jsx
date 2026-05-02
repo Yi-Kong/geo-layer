@@ -6,6 +6,34 @@ import InfoPanel from "../components/panels/InfoPanel";
 import LayerPanel from "../components/panels/LayerPanel";
 import WarningPanel from "../components/panels/WarningPanel";
 import WorkingFaceInfoPanel from "../components/panels/WorkingFaceInfoPanel";
+import {
+  fetchAbandonedShafts,
+  fetchAquifers,
+  fetchBoreholes,
+  fetchCoalSeams,
+  fetchCollapseColumns,
+  fetchFaultInfluenceZones,
+  fetchFaults,
+  fetchGasContentPoints,
+  fetchGasPressurePoints,
+  fetchGasRichAreas,
+  fetchGoafAreas,
+  fetchGoafWaterAreas,
+  fetchMeasurePoints,
+  fetchMineInfo,
+  fetchMiningPaths,
+  fetchPoorSealedBoreholes,
+  fetchRiskBodies,
+  fetchRiskRanges,
+  fetchSmallMineDamageAreas,
+  fetchSoftLayers,
+  fetchStrata,
+  fetchTunnels,
+  fetchWarnings,
+  fetchWaterInrushPoints,
+  fetchWaterRichAreas,
+  fetchWorkingFaces,
+} from "../api/geoApi";
 import { useLayerControl } from "../hooks/useLayerControl";
 import {
   getAbandonedShafts,
@@ -97,32 +125,52 @@ export default function GeoModelPage() {
   const selectedObject = useSelectionStore((state) => state.selectedObject);
   const setWarnings = useWarningStore((state) => state.setWarnings);
   const activeWarnings = useWarningStore((state) => state.warnings);
-  const mineInfo = useMemo(() => getMineInfo(), []);
-  const strata = useMemo(() => getStrata(), []);
-  const coalSeams = useMemo(() => getCoalSeams(), []);
-  const boreholes = useMemo(() => getBoreholes(), []);
-  const faults = useMemo(() => getFaults(), []);
-  const collapseColumns = useMemo(() => getCollapseColumns(), []);
-  const workingFaces = useMemo(() => getWorkingFaces(), []);
-  const tunnels = useMemo(() => getTunnels(), []);
-  const miningPaths = useMemo(() => getMiningPaths(), []);
-  const aquifers = useMemo(() => getAquifers(), []);
-  const goafWaterAreas = useMemo(() => getGoafWaterAreas(), []);
-  const waterInrushPoints = useMemo(() => getWaterInrushPoints(), []);
-  const waterRichAreas = useMemo(() => getWaterRichAreas(), []);
-  const gasRichAreas = useMemo(() => getGasRichAreas(), []);
-  const gasContentPoints = useMemo(() => getGasContentPoints(), []);
-  const gasPressurePoints = useMemo(() => getGasPressurePoints(), []);
-  const softLayers = useMemo(() => getSoftLayers(), []);
-  const smallMineDamageAreas = useMemo(() => getSmallMineDamageAreas(), []);
-  const goafAreas = useMemo(() => getGoafAreas(), []);
-  const abandonedShafts = useMemo(() => getAbandonedShafts(), []);
-  const poorSealedBoreholes = useMemo(() => getPoorSealedBoreholes(), []);
-  const faultInfluenceZones = useMemo(() => getFaultInfluenceZones(), []);
-  const warningPoints = useMemo(() => getWarningPoints(), []);
-  const riskRanges = useMemo(() => getRiskRanges(), []);
-  const measurePoints = useMemo(() => getMeasurePoints(), []);
-  const riskBodies = useMemo(() => getRiskBodies(), []);
+  const [mineInfo, setMineInfo] = useState(() => getMineInfo());
+  const [strata, setStrata] = useState(() => getStrata());
+  const [coalSeams, setCoalSeams] = useState(() => getCoalSeams());
+  const [boreholes, setBoreholes] = useState(() => getBoreholes());
+  const [faults, setFaults] = useState(() => getFaults());
+  const [collapseColumns, setCollapseColumns] = useState(() =>
+    getCollapseColumns()
+  );
+  const [workingFaces, setWorkingFaces] = useState(() => getWorkingFaces());
+  const [tunnels, setTunnels] = useState(() => getTunnels());
+  const [miningPaths, setMiningPaths] = useState(() => getMiningPaths());
+  const [aquifers, setAquifers] = useState(() => getAquifers());
+  const [goafWaterAreas, setGoafWaterAreas] = useState(() =>
+    getGoafWaterAreas()
+  );
+  const [waterInrushPoints, setWaterInrushPoints] = useState(() =>
+    getWaterInrushPoints()
+  );
+  const [waterRichAreas, setWaterRichAreas] = useState(() =>
+    getWaterRichAreas()
+  );
+  const [gasRichAreas, setGasRichAreas] = useState(() => getGasRichAreas());
+  const [gasContentPoints, setGasContentPoints] = useState(() =>
+    getGasContentPoints()
+  );
+  const [gasPressurePoints, setGasPressurePoints] = useState(() =>
+    getGasPressurePoints()
+  );
+  const [softLayers, setSoftLayers] = useState(() => getSoftLayers());
+  const [smallMineDamageAreas, setSmallMineDamageAreas] = useState(() =>
+    getSmallMineDamageAreas()
+  );
+  const [goafAreas, setGoafAreas] = useState(() => getGoafAreas());
+  const [abandonedShafts, setAbandonedShafts] = useState(() =>
+    getAbandonedShafts()
+  );
+  const [poorSealedBoreholes, setPoorSealedBoreholes] = useState(() =>
+    getPoorSealedBoreholes()
+  );
+  const [faultInfluenceZones, setFaultInfluenceZones] = useState(() =>
+    getFaultInfluenceZones()
+  );
+  const [warningPoints, setWarningPoints] = useState(() => getWarningPoints());
+  const [riskRanges, setRiskRanges] = useState(() => getRiskRanges());
+  const [measurePoints, setMeasurePoints] = useState(() => getMeasurePoints());
+  const [riskBodies, setRiskBodies] = useState(() => getRiskBodies());
   const defaultWorkingFaceId = getDefaultWorkingFaceId(workingFaces);
   const [advanceDistance, setAdvanceDistance] = useState(
     workingFaces.find((face) => face.id === defaultWorkingFaceId)
@@ -132,6 +180,110 @@ export default function GeoModelPage() {
     defaultWorkingFaceId
   );
   const [selectedRiskBodyId, setSelectedRiskBodyId] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadGeoData() {
+      try {
+        const [
+          mineInfoData,
+          strataData,
+          coalSeamsData,
+          boreholesData,
+          faultsData,
+          collapseColumnsData,
+          workingFacesData,
+          tunnelsData,
+          miningPathsData,
+          aquifersData,
+          goafWaterAreasData,
+          waterInrushPointsData,
+          waterRichAreasData,
+          gasRichAreasData,
+          gasContentPointsData,
+          gasPressurePointsData,
+          softLayersData,
+          smallMineDamageAreasData,
+          goafAreasData,
+          abandonedShaftsData,
+          poorSealedBoreholesData,
+          faultInfluenceZonesData,
+          warningPointsData,
+          riskRangesData,
+          measurePointsData,
+          riskBodiesData,
+        ] = await Promise.all([
+          fetchMineInfo(),
+          fetchStrata(),
+          fetchCoalSeams(),
+          fetchBoreholes(),
+          fetchFaults(),
+          fetchCollapseColumns(),
+          fetchWorkingFaces(),
+          fetchTunnels(),
+          fetchMiningPaths(),
+          fetchAquifers(),
+          fetchGoafWaterAreas(),
+          fetchWaterInrushPoints(),
+          fetchWaterRichAreas(),
+          fetchGasRichAreas(),
+          fetchGasContentPoints(),
+          fetchGasPressurePoints(),
+          fetchSoftLayers(),
+          fetchSmallMineDamageAreas(),
+          fetchGoafAreas(),
+          fetchAbandonedShafts(),
+          fetchPoorSealedBoreholes(),
+          fetchFaultInfluenceZones(),
+          fetchWarnings(),
+          fetchRiskRanges(),
+          fetchMeasurePoints(),
+          fetchRiskBodies(),
+        ]);
+
+        if (cancelled) {
+          return;
+        }
+
+        setMineInfo(mineInfoData);
+        setStrata(strataData);
+        setCoalSeams(coalSeamsData);
+        setBoreholes(boreholesData);
+        setFaults(faultsData);
+        setCollapseColumns(collapseColumnsData);
+        setWorkingFaces(workingFacesData);
+        setTunnels(tunnelsData);
+        setMiningPaths(miningPathsData);
+        setAquifers(aquifersData);
+        setGoafWaterAreas(goafWaterAreasData);
+        setWaterInrushPoints(waterInrushPointsData);
+        setWaterRichAreas(waterRichAreasData);
+        setGasRichAreas(gasRichAreasData);
+        setGasContentPoints(gasContentPointsData);
+        setGasPressurePoints(gasPressurePointsData);
+        setSoftLayers(softLayersData);
+        setSmallMineDamageAreas(smallMineDamageAreasData);
+        setGoafAreas(goafAreasData);
+        setAbandonedShafts(abandonedShaftsData);
+        setPoorSealedBoreholes(poorSealedBoreholesData);
+        setFaultInfluenceZones(faultInfluenceZonesData);
+        setWarningPoints(warningPointsData);
+        setRiskRanges(riskRangesData);
+        setMeasurePoints(measurePointsData);
+        setRiskBodies(riskBodiesData);
+      } catch (error) {
+        console.error("Failed to load mock geo data:", error);
+      }
+    }
+
+    loadGeoData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
   const selectedSceneWorkingFaceId =
     selectedObject?.type === "working_face" ? selectedObject.id : "";
   const selectedWorkingFace = useMemo(() => {
