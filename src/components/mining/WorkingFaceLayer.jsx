@@ -1,5 +1,9 @@
 import WorkingFace from "./WorkingFace";
 
+function isAdvancingFace(face) {
+  return face.status === "mining" || face.stage === "active" || face.stage === "mining";
+}
+
 export default function WorkingFaceLayer({
   items = [],
   advanceDistance = 0,
@@ -11,9 +15,7 @@ export default function WorkingFaceLayer({
         <WorkingFace
           key={face.id}
           face={face}
-          advanceDistance={
-            face.status === "mining" ? advanceDistance : face.currentAdvance
-          }
+          advanceDistance={isAdvancingFace(face) ? advanceDistance : face.currentAdvance}
           opacity={opacity}
         />
       ))}
