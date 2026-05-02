@@ -4,7 +4,7 @@ import './index.css'
 import App from './App.jsx'
 
 async function enableMocking() {
-  if (!import.meta.env.DEV || import.meta.env.VITE_ENABLE_MOCK === "false") {
+  if (import.meta.env.VITE_ENABLE_MOCK !== "true") {
     return;
   }
 

@@ -7,7 +7,7 @@ const EMPTY_LAYER_CONFIG = {
 };
 
 async function loadFallbackLayerConfig() {
-  if (!import.meta.env.DEV || import.meta.env.VITE_ENABLE_MOCK === "false") {
+  if (import.meta.env.VITE_ENABLE_MOCK !== "true") {
     return EMPTY_LAYER_CONFIG;
   }
 
