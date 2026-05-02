@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Header from "../components/Header";
 import GeoScene from "../components/geo3d/GeoScene";
 import AdvanceSlider from "../components/mining/AdvanceSlider";
@@ -37,6 +37,16 @@ import {
 import { generateWarningsByAdvance } from "../services/warningService";
 import { useSelectionStore } from "../store/selectionStore";
 import { useWarningStore } from "../store/warningStore";
+
+function getDefaultWorkingFaceId(workingFaces) {
+  return (
+    workingFaces.find(
+      (face) => face.stage === "active" || face.status === "mining"
+    )?.id ||
+    workingFaces[0]?.id ||
+    ""
+  );
+}
 
 export default function GeoModelPage() {
   const {
@@ -77,9 +87,37 @@ export default function GeoModelPage() {
   const riskRanges = useMemo(() => getRiskRanges(), []);
   const measurePoints = useMemo(() => getMeasurePoints(), []);
   const riskBodies = useMemo(() => getRiskBodies(), []);
+  const defaultWorkingFaceId = getDefaultWorkingFaceId(workingFaces);
   const [advanceDistance, setAdvanceDistance] = useState(
-    workingFaces[0]?.currentAdvance || 0
+    workingFaces.find((face) => face.id === defaultWorkingFaceId)
+      ?.currentAdvance || 0
   );
+  const [selectedWorkingFaceId, setSelectedWorkingFaceId] = useState(
+    defaultWorkingFaceId
+  );
+
+  const handleWorkingFaceChange = useCallback(
+    (workingFaceId) => {
+      const nextWorkingFace = workingFaces.find(
+        (face) => face.id === workingFaceId
+      );
+
+      setSelectedWorkingFaceId(workingFaceId);
+      setAdvanceDistance(nextWorkingFace?.currentAdvance || 0);
+    },
+    [workingFaces]
+  );
+
+  const handleAdvanceChange = useCallback((valueOrUpdater) => {
+    setAdvanceDistance((prev) => {
+      const next =
+        typeof valueOrUpdater === "function"
+          ? valueOrUpdater(prev)
+          : Number(valueOrUpdater);
+
+      return Number.isFinite(next) ? next : prev;
+    });
+  }, []);
 
   useEffect(() => {
     setWarnings(
@@ -160,9 +198,11 @@ export default function GeoModelPage() {
         advanceDistance={advanceDistance}
       />
       <AdvanceSlider
-        workingFace={workingFaces[0]}
+        workingFaces={workingFaces}
+        selectedWorkingFaceId={selectedWorkingFaceId}
         advanceDistance={advanceDistance}
-        onAdvanceChange={setAdvanceDistance}
+        onWorkingFaceChange={handleWorkingFaceChange}
+        onAdvanceChange={handleAdvanceChange}
       />
     </div>
   );
