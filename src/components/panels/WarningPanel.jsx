@@ -151,7 +151,7 @@ export default function WarningPanel({
 
   if (!hasRiskSummary) {
     return (
-      <section className="fixed bottom-6 right-5 z-20 max-h-[46vh] w-[360px] overflow-hidden border border-white/10 bg-slate-950/86 text-slate-100 shadow-[0_18px_44px_rgba(0,0,0,0.34)] backdrop-blur-md max-lg:hidden">
+      <section className="fixed bottom-6 right-5 z-20 max-h-[38vh] w-[360px] overflow-hidden border border-white/10 bg-slate-950/86 text-slate-100 shadow-[0_18px_44px_rgba(0,0,0,0.34)] backdrop-blur-md max-lg:hidden">
         <div className="border-b border-white/10 p-4">
           <div className="flex items-center justify-between">
             <div className="text-sm font-semibold text-cyan-100">风险预警</div>
@@ -169,7 +169,7 @@ export default function WarningPanel({
           </div>
         </div>
 
-        <div className="max-h-[calc(46vh-86px)] overflow-auto">
+        <div className="max-h-[calc(38vh-86px)] overflow-auto">
           {warnings.length === 0 && (
             <div className="p-4 text-sm text-slate-400">
               当前推进位置无预警。
@@ -230,7 +230,7 @@ export default function WarningPanel({
   }
 
   return (
-    <section className="fixed bottom-6 right-5 z-20 max-h-[58vh] w-[390px] overflow-hidden border border-white/10 bg-slate-950/88 text-slate-100 shadow-[0_18px_44px_rgba(0,0,0,0.34)] backdrop-blur-md max-lg:hidden">
+    <section className="fixed bottom-6 right-5 z-20 max-h-[39vh] w-[390px] overflow-hidden border border-white/10 bg-slate-950/88 text-slate-100 shadow-[0_18px_44px_rgba(0,0,0,0.34)] backdrop-blur-md max-lg:hidden">
       <div className="border-b border-white/10 p-4">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0">
@@ -269,7 +269,7 @@ export default function WarningPanel({
         </div>
       </div>
 
-      <div className="max-h-[calc(58vh-126px)] overflow-auto">
+      <div className="max-h-[calc(39vh-126px)] overflow-auto">
         {summary.warningCount === 0 && (
           <div className="border-b border-white/[0.06] px-4 py-3 text-sm text-slate-400">
             当前无明显风险，最近风险体仍可点击查看空间关系。

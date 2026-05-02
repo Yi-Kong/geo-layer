@@ -133,6 +133,7 @@ export default function GeoScene({
   selectedRiskBodyId,
   highlightedRiskBodyId,
   onClearSelection,
+  onSelectWorkingFace,
 }) {
   const layers = useLayerStore((state) => state.layers);
   const opacities = useLayerStore((state) => state.opacities);
@@ -229,6 +230,7 @@ export default function GeoScene({
             items={workingFaces}
             advanceDistance={advanceDistance}
             opacity={opacities.workingFaces}
+            onSelectWorkingFace={onSelectWorkingFace}
           />
         )}
 

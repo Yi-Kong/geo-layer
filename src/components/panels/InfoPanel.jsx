@@ -16,7 +16,15 @@ function InfoRow({ label, value }) {
   );
 }
 
-export default function InfoPanel({ coalSeams = [], onClearSelection }) {
+const DEFAULT_POSITION_CLASS =
+  "fixed right-5 top-[84px] z-20 max-lg:bottom-[118px] max-lg:right-4 max-lg:top-auto";
+
+export default function InfoPanel({
+  coalSeams = [],
+  onClearSelection,
+  hideEmpty = false,
+  positionClassName = DEFAULT_POSITION_CLASS,
+}) {
   const selectedObject = useSelectionStore((state) => state.selectedObject);
   const clearSelection = useSelectionStore((state) => state.clearSelection);
 
@@ -26,8 +34,14 @@ export default function InfoPanel({ coalSeams = [], onClearSelection }) {
   }
 
   if (!selectedObject) {
+    if (hideEmpty) {
+      return null;
+    }
+
     return (
-      <section className="fixed right-5 top-[84px] z-20 w-[360px] border border-white/10 bg-slate-950/82 p-4 text-slate-100 shadow-[0_18px_44px_rgba(0,0,0,0.34)] backdrop-blur-md max-lg:bottom-[118px] max-lg:right-4 max-lg:top-auto max-lg:w-[300px]">
+      <section
+        className={`${positionClassName} w-[360px] border border-white/10 bg-slate-950/82 p-4 text-slate-100 shadow-[0_18px_44px_rgba(0,0,0,0.34)] backdrop-blur-md max-lg:w-[300px]`}
+      >
         <div className="text-sm font-semibold text-cyan-100">对象属性</div>
         <div className="mt-4 text-sm text-slate-400">
           请选择三维对象查看详情
@@ -40,7 +54,9 @@ export default function InfoPanel({ coalSeams = [], onClearSelection }) {
   const properties = selectedObject.properties || {};
 
   return (
-    <section className="fixed right-5 top-[84px] z-20 max-h-[calc(100vh-420px)] w-[360px] overflow-auto border border-white/10 bg-slate-950/86 p-4 text-slate-100 shadow-[0_18px_44px_rgba(0,0,0,0.34)] backdrop-blur-md max-lg:bottom-[118px] max-lg:right-4 max-lg:top-auto max-lg:max-h-[34vh] max-lg:w-[300px]">
+    <section
+      className={`${positionClassName} max-h-[43vh] w-[360px] overflow-auto border border-white/10 bg-slate-950/86 p-4 text-slate-100 shadow-[0_18px_44px_rgba(0,0,0,0.34)] backdrop-blur-md max-lg:max-h-[34vh] max-lg:w-[300px]`}
+    >
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
           <div className="text-sm font-semibold text-cyan-100">对象属性</div>

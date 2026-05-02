@@ -5,6 +5,7 @@ import AdvanceSlider from "../components/mining/AdvanceSlider";
 import InfoPanel from "../components/panels/InfoPanel";
 import LayerPanel from "../components/panels/LayerPanel";
 import WarningPanel from "../components/panels/WarningPanel";
+import WorkingFaceInfoPanel from "../components/panels/WorkingFaceInfoPanel";
 import { useLayerControl } from "../hooks/useLayerControl";
 import {
   getAbandonedShafts,
@@ -46,6 +47,40 @@ function getDefaultWorkingFaceId(workingFaces) {
     workingFaces[0]?.id ||
     ""
   );
+}
+
+function toFiniteNumber(value, fallback = 0) {
+  const number = Number(value);
+  return Number.isFinite(number) ? number : fallback;
+}
+
+function getAdvancePercent(current, planned) {
+  if (!planned || planned <= 0) return 0;
+  return Math.max(0, Math.min(100, Math.round((current / planned) * 100)));
+}
+
+function buildSelectedWorkingFaceObject(face, advanceDistance) {
+  if (!face) {
+    return null;
+  }
+
+  const currentAdvance = toFiniteNumber(advanceDistance, face.currentAdvance || 0);
+  const plannedAdvance = toFiniteNumber(
+    face.plannedAdvance ?? face.metrics?.plannedAdvance,
+    0
+  );
+  const advancePercent = getAdvancePercent(currentAdvance, plannedAdvance);
+
+  return {
+    ...face,
+    currentAdvance,
+    advancePercent,
+    metrics: {
+      ...(face.metrics || {}),
+      currentAdvance,
+      advancePercent,
+    },
+  };
 }
 
 export default function GeoModelPage() {
@@ -97,6 +132,23 @@ export default function GeoModelPage() {
     defaultWorkingFaceId
   );
   const [selectedRiskBodyId, setSelectedRiskBodyId] = useState(null);
+  const selectedSceneWorkingFaceId =
+    selectedObject?.type === "working_face" ? selectedObject.id : "";
+  const selectedWorkingFace = useMemo(() => {
+    const sceneSelectedWorkingFace = selectedSceneWorkingFaceId
+      ? workingFaces.find((face) => face.id === selectedSceneWorkingFaceId)
+      : null;
+
+    return (
+      sceneSelectedWorkingFace ||
+      workingFaces.find((face) => face.id === selectedWorkingFaceId) ||
+      workingFaces.find(
+        (face) => face.stage === "active" || face.status === "mining"
+      ) ||
+      workingFaces[0] ||
+      null
+    );
+  }, [selectedSceneWorkingFaceId, selectedWorkingFaceId, workingFaces]);
   const selectedObjectRiskBodyId = useMemo(() => {
     if (!selectedObject?.id) {
       return null;
@@ -119,8 +171,17 @@ export default function GeoModelPage() {
       setSelectedWorkingFaceId(workingFaceId);
       setSelectedRiskBodyId(null);
       setAdvanceDistance(nextWorkingFace?.currentAdvance || 0);
+
+      if (nextWorkingFace) {
+        setSelectedObject(
+          buildSelectedWorkingFaceObject(
+            nextWorkingFace,
+            nextWorkingFace.currentAdvance || 0
+          )
+        );
+      }
     },
-    [workingFaces]
+    [setSelectedObject, workingFaces]
   );
 
   const handleAdvanceChange = useCallback((valueOrUpdater) => {
@@ -140,6 +201,16 @@ export default function GeoModelPage() {
     );
   }, [advanceDistance, riskBodies, setWarnings, workingFaces]);
 
+  const handleSceneWorkingFaceSelect = useCallback((workingFace) => {
+    if (!workingFace?.id) {
+      return;
+    }
+
+    setSelectedWorkingFaceId(workingFace.id);
+    setSelectedRiskBodyId(null);
+    setAdvanceDistance(toFiniteNumber(workingFace.currentAdvance, 0));
+  }, []);
+
   const handleSelectWarning = useCallback((warning) => {
     setSelectedRiskBodyId(warning?.riskBodyId || null);
   }, []);
@@ -147,6 +218,19 @@ export default function GeoModelPage() {
   const handleClearSelection = useCallback(() => {
     setSelectedRiskBodyId(null);
   }, []);
+
+  const handleSelectRiskBody = useCallback(
+    (riskBodyId) => {
+      setSelectedRiskBodyId(riskBodyId || null);
+
+      const riskBody = riskBodies.find((item) => item.id === riskBodyId);
+
+      if (riskBody) {
+        setSelectedObject(riskBody);
+      }
+    },
+    [riskBodies, setSelectedObject]
+  );
 
   function handleSelectLegacyLayer(layerId) {
     setSelectedLayerId(layerId);
@@ -207,6 +291,7 @@ export default function GeoModelPage() {
         advanceDistance={advanceDistance}
         selectedRiskBodyId={effectiveSelectedRiskBodyId}
         onClearSelection={handleClearSelection}
+        onSelectWorkingFace={handleSceneWorkingFaceSelect}
       />
 
       <Header mineInfo={mineInfo} />
@@ -217,7 +302,25 @@ export default function GeoModelPage() {
         onExplodeChange={setExplode}
         legacyLoading={loading}
       />
-      <InfoPanel coalSeams={coalSeams} onClearSelection={handleClearSelection} />
+      <WorkingFaceInfoPanel
+        workingFace={selectedWorkingFace}
+        workingFaces={workingFaces}
+        tunnels={tunnels}
+        riskBodies={riskBodies}
+        warnings={activeWarnings}
+        advanceDistance={advanceDistance}
+        selectedWorkingFaceId={selectedWorkingFace?.id || selectedWorkingFaceId}
+        onSelectWorkingFace={handleWorkingFaceChange}
+        onSelectRiskBody={handleSelectRiskBody}
+      />
+      {selectedObject?.type && selectedObject.type !== "working_face" && (
+        <InfoPanel
+          coalSeams={coalSeams}
+          hideEmpty
+          positionClassName="fixed right-[420px] top-[84px] z-20 max-lg:hidden"
+          onClearSelection={handleClearSelection}
+        />
+      )}
       <WarningPanel
         workingFaces={workingFaces}
         riskBodies={riskBodies}
@@ -225,9 +328,7 @@ export default function GeoModelPage() {
         selectedWorkingFaceId={selectedWorkingFaceId}
         selectedRiskBodyId={effectiveSelectedRiskBodyId}
         onSelectWarning={handleSelectWarning}
-        onSelectRiskBody={(riskBodyId) =>
-          setSelectedRiskBodyId(riskBodyId || null)
-        }
+        onSelectRiskBody={handleSelectRiskBody}
       />
       <AdvanceSlider
         workingFaces={workingFaces}

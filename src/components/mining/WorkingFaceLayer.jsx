@@ -8,6 +8,7 @@ export default function WorkingFaceLayer({
   items = [],
   advanceDistance = 0,
   opacity = 0.72,
+  onSelectWorkingFace,
 }) {
   return (
     <>
@@ -17,6 +18,7 @@ export default function WorkingFaceLayer({
           face={face}
           advanceDistance={isAdvancingFace(face) ? advanceDistance : face.currentAdvance}
           opacity={opacity}
+          onSelectWorkingFace={onSelectWorkingFace}
         />
       ))}
     </>

@@ -221,7 +221,12 @@ function createOutlineGeometry(boundary) {
   return geometry;
 }
 
-export default function WorkingFace({ face, advanceDistance, opacity = 0.72 }) {
+export default function WorkingFace({
+  face,
+  advanceDistance,
+  opacity = 0.72,
+  onSelectWorkingFace,
+}) {
   const [hovered, setHovered] = useState(false);
   const selectedObject = useSceneStore((state) => state.selectedObject);
   const setSelectedObject = useSceneStore((state) => state.setSelectedObject);
@@ -284,7 +289,7 @@ export default function WorkingFace({ face, advanceDistance, opacity = 0.72 }) {
         geometry={geometry}
         onClick={(event) => {
           event.stopPropagation();
-          setSelectedObject({
+          const selectedFace = {
             ...face,
             boundary: movedBoundary,
             currentAdvance,
@@ -296,7 +301,10 @@ export default function WorkingFace({ face, advanceDistance, opacity = 0.72 }) {
               currentAdvance,
               advancePercent,
             },
-          });
+          };
+
+          setSelectedObject(selectedFace);
+          onSelectWorkingFace?.(selectedFace);
         }}
         onPointerOver={(event) => {
           event.stopPropagation();
