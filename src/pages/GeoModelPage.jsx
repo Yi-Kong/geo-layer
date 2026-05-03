@@ -351,9 +351,20 @@ export default function GeoModelPage() {
 
   useEffect(() => {
     setWarnings(
-      generateWarningsByAdvance(workingFaces, riskBodies, advanceDistance)
+      generateWarningsByAdvance(
+        workingFaces,
+        riskBodies,
+        advanceDistance,
+        selectedWorkingFaceId
+      )
     );
-  }, [advanceDistance, riskBodies, setWarnings, workingFaces]);
+  }, [
+    advanceDistance,
+    riskBodies,
+    selectedWorkingFaceId,
+    setWarnings,
+    workingFaces,
+  ]);
 
   const handleSceneWorkingFaceSelect = useCallback((workingFace) => {
     if (!workingFace?.id) {
@@ -444,6 +455,7 @@ export default function GeoModelPage() {
         generatedWarnings={activeWarnings}
         riskBodies={riskBodies}
         advanceDistance={advanceDistance}
+        selectedWorkingFaceId={selectedWorkingFace?.id || selectedWorkingFaceId}
         selectedRiskBodyId={effectiveSelectedRiskBodyId}
         onClearSelection={handleClearSelection}
         onSelectWorkingFace={handleSceneWorkingFaceSelect}

@@ -138,6 +138,19 @@ function buildAdvancedWorkingFace(workingFace, advanceDistance) {
   };
 }
 
+function getDefaultWorkingFaceId(workingFaces) {
+  return (
+    workingFaces.find(
+      (face) =>
+        face.status === "mining" ||
+        face.stage === "active" ||
+        face.stage === "mining"
+    )?.id ||
+    workingFaces[0]?.id ||
+    ""
+  );
+}
+
 export function getRiskTypeLabel(riskType) {
   switch (normalizeRiskType(riskType)) {
     case "goaf_water":
@@ -356,19 +369,34 @@ export function generateWarnings(workingFaces, riskBodies) {
  * @param {object[]} workingFaces
  * @param {object[]} riskBodies
  * @param {number} advanceDistance
+ * @param {string} selectedWorkingFaceId
  * @returns {object[]}
  */
 export function generateWarningsByAdvance(
   workingFaces,
   riskBodies,
-  advanceDistance
+  advanceDistance,
+  selectedWorkingFaceId = ""
 ) {
   if (!Array.isArray(workingFaces)) {
     return [];
   }
 
+  const hasSelectedWorkingFace = workingFaces.some(
+    (workingFace) => workingFace.id === selectedWorkingFaceId
+  );
+  const advancingWorkingFaceId = hasSelectedWorkingFace
+    ? selectedWorkingFaceId
+    : getDefaultWorkingFaceId(workingFaces);
   const movedWorkingFaces = workingFaces
-    .map((workingFace) => buildAdvancedWorkingFace(workingFace, advanceDistance))
+    .map((workingFace) =>
+      buildAdvancedWorkingFace(
+        workingFace,
+        workingFace.id === advancingWorkingFaceId
+          ? advanceDistance
+          : workingFace.currentAdvance
+      )
+    )
     .filter(Boolean);
 
   return generateWarnings(movedWorkingFaces, riskBodies);

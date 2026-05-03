@@ -234,6 +234,19 @@ function getWarningKey(warning, index) {
   );
 }
 
+function getDefaultWorkingFaceId(workingFaces) {
+  return (
+    workingFaces.find(
+      (face) =>
+        face.status === "mining" ||
+        face.stage === "active" ||
+        face.stage === "mining"
+    )?.id ||
+    workingFaces[0]?.id ||
+    ""
+  );
+}
+
 function getRiskBodyLayerId(body) {
   return (
     RISK_BODY_LAYER_BY_TYPE[body?.riskType] ||
@@ -474,6 +487,7 @@ export default function GeoScene({
   generatedWarnings = [],
   riskBodies = [],
   advanceDistance = 0,
+  selectedWorkingFaceId = "",
   selectedRiskBodyId,
   highlightedRiskBodyId,
   onClearSelection,
@@ -519,6 +533,12 @@ export default function GeoScene({
     getWarningLevel(highlightedWarning) !== "none"
       ? getWarningLevel(highlightedWarning)
       : getRiskLevel(highlightedRiskBody);
+  const hasSelectedWorkingFace = workingFaces.some(
+    (face) => face.id === selectedWorkingFaceId
+  );
+  const advancingWorkingFaceId = hasSelectedWorkingFace
+    ? selectedWorkingFaceId
+    : getDefaultWorkingFaceId(workingFaces);
   const distanceLineWarningKeys = new Set();
   const hasFocusedRiskBody = Boolean(activeHighlightedRiskBodyId);
   let distanceLineCount = 0;
@@ -614,6 +634,7 @@ export default function GeoScene({
           <WorkingFaceLayer
             items={workingFaces}
             advanceDistance={advanceDistance}
+            selectedWorkingFaceId={advancingWorkingFaceId}
             opacity={opacities.workingFaces}
             onSelectWorkingFace={onSelectWorkingFace}
           />
@@ -729,9 +750,13 @@ export default function GeoScene({
 
             const warningColor = getRiskColor(riskBody, warning);
             const showDistanceLine = distanceLineWarningKeys.has(warningKey);
+            const workingFaceAdvanceDistance =
+              workingFace.id === advancingWorkingFaceId
+                ? advanceDistance
+                : workingFace.currentAdvance;
             const movedWorkingFace = buildMovedWorkingFace(
               workingFace,
-              advanceDistance
+              workingFaceAdvanceDistance
             );
 
             return (
