@@ -4,6 +4,7 @@ import GeoScene from "../components/geo3d/GeoScene";
 import AdvanceSlider from "../components/mining/AdvanceSlider";
 import InfoPanel from "../components/panels/InfoPanel";
 import LayerPanel from "../components/panels/LayerPanel";
+import RiskBodyDetailPanel from "../components/panels/RiskBodyDetailPanel";
 import WarningPanel from "../components/panels/WarningPanel";
 import WorkingFaceInfoPanel from "../components/panels/WorkingFaceInfoPanel";
 import {
@@ -88,6 +89,28 @@ function buildSelectedWorkingFaceObject(face, advanceDistance) {
       advancePercent,
     },
   };
+}
+
+function isRiskBodyObject(object, riskBodies = []) {
+  if (!object?.id || object.type === "working_face") {
+    return false;
+  }
+
+  if (riskBodies.some((item) => item.id === object.id)) {
+    return true;
+  }
+
+  return Boolean(
+    object.riskType ||
+      object.type === "goaf_water_area" ||
+      object.type === "water_rich_area" ||
+      object.type === "gas_rich_area" ||
+      object.type === "small_mine_damage_area" ||
+      object.type === "goaf_area" ||
+      object.type === "fault_influence_zone" ||
+      object.type === "abandoned_shaft" ||
+      object.type === "poor_sealed_borehole"
+  );
 }
 
 export default function GeoModelPage() {
@@ -280,18 +303,18 @@ export default function GeoModelPage() {
       null
     );
   }, [selectedSceneWorkingFaceId, selectedWorkingFaceId, workingFaces]);
-  const selectedObjectRiskBodyId = useMemo(() => {
+  const selectedRiskBody = useMemo(() => {
     if (!selectedObject?.id) {
       return null;
     }
 
-    return riskBodies.some((riskBody) => riskBody.id === selectedObject.id)
-      ? selectedObject.id
-      : null;
+    return (
+      riskBodies.find((item) => item.id === selectedObject.id) ||
+      (isRiskBodyObject(selectedObject, riskBodies) ? selectedObject : null)
+    );
   }, [riskBodies, selectedObject]);
-  const effectiveSelectedRiskBodyId = selectedObject
-    ? selectedObjectRiskBodyId
-    : selectedRiskBodyId;
+  const effectiveSelectedRiskBodyId =
+    selectedRiskBody?.id || (selectedObject ? null : selectedRiskBodyId);
 
   const handleWorkingFaceChange = useCallback(
     (workingFaceId) => {
@@ -348,7 +371,8 @@ export default function GeoModelPage() {
 
   const handleClearSelection = useCallback(() => {
     setSelectedRiskBodyId(null);
-  }, []);
+    setSelectedObject(null);
+  }, [setSelectedObject]);
 
   const handleSelectRiskBody = useCallback(
     (riskBodyId) => {
@@ -444,14 +468,25 @@ export default function GeoModelPage() {
         onSelectWorkingFace={handleWorkingFaceChange}
         onSelectRiskBody={handleSelectRiskBody}
       />
-      {selectedObject?.type && selectedObject.type !== "working_face" && (
-        <InfoPanel
-          coalSeams={coalSeams}
-          hideEmpty
-          positionClassName="fixed right-[420px] top-[84px] z-20 max-lg:hidden"
-          onClearSelection={handleClearSelection}
+      {selectedRiskBody && (
+        <RiskBodyDetailPanel
+          riskBody={selectedRiskBody}
+          workingFace={selectedWorkingFace}
+          warnings={activeWarnings}
+          advanceDistance={advanceDistance}
+          onClose={handleClearSelection}
         />
       )}
+      {selectedObject?.type &&
+        selectedObject.type !== "working_face" &&
+        !selectedRiskBody && (
+          <InfoPanel
+            coalSeams={coalSeams}
+            hideEmpty
+            positionClassName="fixed right-[420px] top-[84px] z-20 max-lg:hidden"
+            onClearSelection={handleClearSelection}
+          />
+        )}
       <WarningPanel
         workingFaces={workingFaces}
         riskBodies={riskBodies}
