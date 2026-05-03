@@ -26,9 +26,11 @@ export function setWarningRules(rules) {
 function normalizeRiskType(riskType) {
   switch (riskType) {
     case "goaf_water_area":
-    case "goaf_area":
     case "goaf_water":
       return "goaf_water";
+    case "goaf_area":
+    case "goaf":
+      return "goaf";
     case "water_rich_area":
     case "water_inrush_point":
     case "water_inrush":
@@ -37,6 +39,12 @@ function normalizeRiskType(riskType) {
     case "gas_rich":
     case "gas":
       return "gas";
+    case "small_mine_damage_area":
+    case "small_mine_damage":
+      return "small_mine_damage";
+    case "fault_influence_zone":
+    case "fault_influence":
+      return "fault_influence";
     default:
       return riskType || "";
   }
@@ -140,6 +148,12 @@ export function getRiskTypeLabel(riskType) {
       return "瓦斯富集";
     case "soft_layer":
       return "软分层";
+    case "goaf":
+      return "采空区";
+    case "abandoned_shaft":
+      return "废弃井筒";
+    case "poor_sealed_borehole":
+      return "封闭不良钻孔";
     case "fault":
     case "fault_influence":
     case "fault_influence_zone":

@@ -2,6 +2,12 @@ const RISK_TYPE_LABELS = {
   goaf_water: "老空水风险",
   water_inrush: "突水风险",
   gas: "瓦斯风险",
+  soft_layer: "软分层",
+  small_mine_damage: "小窑破坏区",
+  goaf: "采空区",
+  abandoned_shaft: "废弃井筒",
+  poor_sealed_borehole: "封闭不良钻孔",
+  fault_influence: "断层影响带",
 };
 
 const OBJECT_TYPE_LABELS = {

@@ -1,3 +1,5 @@
+import { enrichRiskBodies } from "./riskMeta.js";
+
 export const workingFaces = [
   {
     id: "wf-3101",
@@ -252,13 +254,15 @@ export const miningPaths = [
   },
 ];
 
-export const goafAreas = [
+export const goafAreas = enrichRiskBodies([
   {
     id: "goaf-207",
     code: "GOAF-207",
     name: "207历史采空区",
     type: "goaf_area",
-    riskType: "goaf_water",
+    riskType: "goaf",
+    fileSection: "7.5",
+    geometryType: "zone",
     position: [-236, 34, 82],
     size: [96, 18, 92],
     riskLevel: "medium",
@@ -278,7 +282,9 @@ export const goafAreas = [
     code: "GOAF-302",
     name: "302历史采空区",
     type: "goaf_area",
-    riskType: "goaf_water",
+    riskType: "goaf",
+    fileSection: "7.5",
+    geometryType: "zone",
     position: [278, 48, -75],
     size: [112, 20, 116],
     riskLevel: "high",
@@ -293,15 +299,17 @@ export const goafAreas = [
       建议措施: "探放水、留设防水煤柱",
     },
   },
-];
+]);
 
-export const smallMineDamageAreas = [
+export const smallMineDamageAreas = enrichRiskBodies([
   {
     id: "smd-01",
     code: "SMD-01",
     name: "北西小窑破坏区",
     type: "small_mine_damage_area",
-    riskType: "goaf_water",
+    riskType: "small_mine_damage",
+    fileSection: "7.5",
+    geometryType: "zone",
     position: [-252, 62, -44],
     size: [76, 32, 92],
     riskLevel: "high",
@@ -320,7 +328,9 @@ export const smallMineDamageAreas = [
     code: "SMD-02",
     name: "东翼小窑破坏区",
     type: "small_mine_damage_area",
-    riskType: "goaf_water",
+    riskType: "small_mine_damage",
+    fileSection: "7.5",
+    geometryType: "zone",
     position: [238, 64, 122],
     size: [68, 30, 78],
     riskLevel: "medium",
@@ -334,14 +344,17 @@ export const smallMineDamageAreas = [
       建议措施: "地面物探和井下钻探验证",
     },
   },
-];
+]);
 
-export const abandonedShafts = [
+export const abandonedShafts = enrichRiskBodies([
   {
     id: "shaft-old-01",
     code: "SHAFT-OLD-01",
     name: "1号废弃井筒",
     type: "abandoned_shaft",
+    riskType: "abandoned_shaft",
+    fileSection: "7.5/7.6",
+    geometryType: "point",
     position: [-282, 70, -38],
     size: [12, 188, 12],
     riskLevel: "high",
@@ -360,6 +373,9 @@ export const abandonedShafts = [
     code: "SHAFT-OLD-02",
     name: "2号废弃暗井",
     type: "abandoned_shaft",
+    riskType: "abandoned_shaft",
+    fileSection: "7.5/7.6",
+    geometryType: "point",
     position: [232, 66, 138],
     size: [10, 156, 10],
     riskLevel: "medium",
@@ -373,4 +389,4 @@ export const abandonedShafts = [
       建议措施: "补充探查与封堵检查",
     },
   },
-];
+]);

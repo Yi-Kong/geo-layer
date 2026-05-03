@@ -1,3 +1,5 @@
+import { enrichRiskBodies } from "./riskMeta.js";
+
 export const faults = [
   {
     id: "fault-f12",
@@ -112,7 +114,7 @@ export const collapseColumns = [
   },
 ];
 
-export const faultInfluenceZones = faults.map((fault) => ({
+export const faultInfluenceZones = enrichRiskBodies(faults.map((fault) => ({
   id: `${fault.id}-zone`,
   code: `${fault.code}-ZONE`,
   name: `${fault.name}影响带`,
@@ -124,7 +126,9 @@ export const faultInfluenceZones = faults.map((fault) => ({
     fault.size[2] + fault.influenceRange,
   ],
   rotation: fault.rotation,
-  riskType: "water_inrush",
+  riskType: "fault_influence",
+  fileSection: "7.6/7.7",
+  geometryType: "zone",
   riskLevel: fault.riskLevel,
   influenceRadius: fault.influenceRange,
   color: "#FB7185",
@@ -136,4 +140,4 @@ export const faultInfluenceZones = faults.map((fault) => ({
     主要风险: "断层破碎带导水或瓦斯异常",
     建议措施: "采前补充探查并进行支护、注浆或留设保护煤柱论证",
   },
-}));
+})));

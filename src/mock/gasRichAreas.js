@@ -1,10 +1,13 @@
-export const gasRichAreas = [
+import { enrichRiskBodies } from "./riskMeta.js";
+
+export const gasRichAreas = enrichRiskBodies([
   {
     id: "gas-3101-02",
     code: "GAS-3101-02",
     name: "3101北翼瓦斯富集区",
     type: "gas_rich_area",
     riskType: "gas",
+    fileSection: "7.7",
     geometryType: "volume",
     position: [95, 43, 54],
     size: [120, 22, 84],
@@ -40,6 +43,7 @@ export const gasRichAreas = [
     name: "3103南翼瓦斯富集区",
     type: "gas_rich_area",
     riskType: "gas",
+    fileSection: "7.7",
     geometryType: "volume",
     position: [-128, 42, -102],
     size: [96, 20, 72],
@@ -69,7 +73,7 @@ export const gasRichAreas = [
       说明: "与软分层叠加，需加强抽采达标评价。",
     },
   },
-];
+]);
 
 export const gasContentPoints = [
   {
@@ -210,12 +214,15 @@ export const gasPressurePoints = [
   },
 ];
 
-export const softLayers = [
+export const softLayers = enrichRiskBodies([
   {
     id: "soft-003-north",
     code: "SOFT-003-N",
     name: "3号煤北翼软分层",
     type: "soft_layer",
+    riskType: "soft_layer",
+    fileSection: "7.7",
+    geometryType: "layer",
     position: [58, 44, 42],
     size: [180, 2.2, 108],
     riskLevel: "medium",
@@ -234,6 +241,9 @@ export const softLayers = [
     code: "SOFT-003-S",
     name: "3号煤南翼软分层",
     type: "soft_layer",
+    riskType: "soft_layer",
+    fileSection: "7.7",
+    geometryType: "layer",
     position: [-132, 44, -102],
     size: [126, 2.2, 86],
     riskLevel: "low",
@@ -247,4 +257,4 @@ export const softLayers = [
       说明: "与3103南翼瓦斯富集区部分重叠。",
     },
   },
-];
+]);

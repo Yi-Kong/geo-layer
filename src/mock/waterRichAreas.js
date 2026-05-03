@@ -1,3 +1,5 @@
+import { enrichRiskBodies } from "./riskMeta.js";
+
 export const aquifers = [
   {
     id: "aquifer-taiyuan-limestone",
@@ -37,13 +39,14 @@ export const aquifers = [
   },
 ];
 
-export const waterRichAreas = [
+export const waterRichAreas = enrichRiskBodies([
   {
     id: "wra-ord-01",
     code: "WRA-ORD-01",
     name: "奥灰富水异常区",
     type: "water_rich_area",
     riskType: "water_inrush",
+    fileSection: "7.6",
     geometryType: "volume",
     position: [250, -98, -67.5],
     size: [160, 104, 175],
@@ -78,6 +81,7 @@ export const waterRichAreas = [
     name: "太原组局部富水区",
     type: "water_rich_area",
     riskType: "water_inrush",
+    fileSection: "7.6",
     geometryType: "volume",
     position: [-70, -34, 104],
     size: [128, 42, 92],
@@ -106,14 +110,17 @@ export const waterRichAreas = [
       说明: "对15号煤层底板和东翼巷道布置有影响。",
     },
   },
-];
+]);
 
-export const waterInrushPoints = [
+export const waterInrushPoints = enrichRiskBodies([
   {
     id: "wip-1987-01",
     code: "WIP-1987-01",
     name: "1987年突水点",
     type: "water_inrush_point",
+    riskType: "water_inrush",
+    fileSection: "7.6",
+    geometryType: "point",
     position: [194, -44, 34],
     size: [10, 10, 10],
     waterVolume: 420,
@@ -133,6 +140,9 @@ export const waterInrushPoints = [
     code: "WIP-SIM-02",
     name: "底板突水推演点",
     type: "water_inrush_point",
+    riskType: "water_inrush",
+    fileSection: "7.6",
+    geometryType: "point",
     position: [262, -70, -12],
     size: [10, 10, 10],
     waterVolume: 760,
@@ -152,6 +162,9 @@ export const waterInrushPoints = [
     code: "WIP-2009-03",
     name: "2009年涌水点",
     type: "water_inrush_point",
+    riskType: "water_inrush",
+    fileSection: "7.6",
+    geometryType: "point",
     position: [-96, -28, 126],
     size: [10, 10, 10],
     waterVolume: 130,
@@ -166,4 +179,4 @@ export const waterInrushPoints = [
       处置结果: "排水治理",
     },
   },
-];
+]);

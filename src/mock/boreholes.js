@@ -1,3 +1,5 @@
+import { enrichRiskBodies } from "./riskMeta.js";
+
 export const boreholes = [
   {
     id: "bh-zk101",
@@ -106,12 +108,15 @@ export const boreholes = [
   },
 ];
 
-export const poorSealedBoreholes = [
+export const poorSealedBoreholes = enrichRiskBodies([
   {
     id: "psb-074",
     code: "PSB-074",
     name: "封闭不良钻孔074",
     type: "poor_sealed_borehole",
+    riskType: "poor_sealed_borehole",
+    fileSection: "7.5/7.6",
+    geometryType: "point",
     position: [148, 78, -126],
     size: [7, 210, 7],
     riskLevel: "high",
@@ -130,6 +135,9 @@ export const poorSealedBoreholes = [
     code: "PSB-118",
     name: "封闭不良钻孔118",
     type: "poor_sealed_borehole",
+    riskType: "poor_sealed_borehole",
+    fileSection: "7.5/7.6",
+    geometryType: "point",
     position: [-156, 80, 112],
     size: [7, 216, 7],
     riskLevel: "medium",
@@ -143,4 +151,4 @@ export const poorSealedBoreholes = [
       建议措施: "地面复测定位，井下超前探查",
     },
   },
-];
+]);

@@ -136,8 +136,11 @@ export function getRiskBodies() {
     ...getGoafWaterAreas(),
     ...getWaterRichAreas(),
     ...getGasRichAreas(),
+    ...getSoftLayers(),
     ...getSmallMineDamageAreas(),
     ...getGoafAreas(),
+    ...getAbandonedShafts(),
+    ...getPoorSealedBoreholes(),
     ...getFaultInfluenceZones(),
   ];
 }

@@ -1,10 +1,13 @@
-export const goafWaterAreas = [
+import { enrichRiskBodies } from "./riskMeta.js";
+
+export const goafWaterAreas = enrichRiskBodies([
   {
     id: "gwa-302",
     code: "GWA-302",
     name: "302采空积水区",
     type: "goaf_water_area",
     riskType: "goaf_water",
+    fileSection: "7.5",
     geometryType: "volume",
     position: [278, 38, -75],
     size: [80, 40, 86],
@@ -40,6 +43,7 @@ export const goafWaterAreas = [
     name: "217老空积水区",
     type: "goaf_water_area",
     riskType: "goaf_water",
+    fileSection: "7.5",
     geometryType: "volume",
     position: [-248, 30, 86],
     size: [74, 32, 78],
@@ -69,4 +73,4 @@ export const goafWaterAreas = [
       说明: "位于西翼边界附近，对规划巷道有影响。",
     },
   },
-];
+]);

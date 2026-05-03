@@ -70,8 +70,11 @@ function getRiskBodies() {
     ...goafWaterAreas,
     ...waterRichAreas,
     ...gasRichAreas,
+    ...softLayers,
     ...smallMineDamageAreas,
     ...goafAreas,
+    ...abandonedShafts,
+    ...poorSealedBoreholes,
     ...faultInfluenceZones,
   ];
 }

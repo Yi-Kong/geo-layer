@@ -36,3 +36,12 @@ export {
 export { riskRanges, warnings } from "./warnings.js";
 export { measurePoints, treatmentMeasures } from "./measures.js";
 export { warningRules } from "./warningRules.mock.js";
+export {
+  RISK_CATEGORIES,
+  RISK_TYPES,
+  enrichRiskBodies,
+  enrichRiskBody,
+  fileSectionMeta,
+  riskLevelMeta,
+  riskTypeMeta,
+} from "./riskMeta.js";
