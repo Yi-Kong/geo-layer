@@ -218,21 +218,100 @@ function getDefaultGeometryType(body, typeMeta) {
   return Array.isArray(body.points) && body.points.length > 0 ? "volume" : "point";
 }
 
+function inferRiskTypeFromLegacyType(type) {
+  switch (type) {
+    case "goaf_water_area":
+      return RISK_TYPES.GOAF_WATER;
+    case "water_rich_area":
+    case "water_inrush_point":
+      return RISK_TYPES.WATER_INRUSH;
+    case "gas_rich_area":
+      return RISK_TYPES.GAS;
+    case "soft_layer":
+      return RISK_TYPES.SOFT_LAYER;
+    case "small_mine_damage_area":
+      return RISK_TYPES.SMALL_MINE_DAMAGE;
+    case "goaf_area":
+      return RISK_TYPES.GOAF;
+    case "abandoned_shaft":
+      return RISK_TYPES.ABANDONED_SHAFT;
+    case "poor_sealed_borehole":
+      return RISK_TYPES.POOR_SEALED_BOREHOLE;
+    case "fault":
+    case "fault_influence_zone":
+      return RISK_TYPES.FAULT_INFLUENCE;
+    default:
+      return "";
+  }
+}
+
+function normalizeRiskType(riskType, legacyType) {
+  if (riskTypeMeta[riskType]) {
+    return riskType;
+  }
+
+  return inferRiskTypeFromLegacyType(riskType) || inferRiskTypeFromLegacyType(legacyType);
+}
+
+function getDescription(body) {
+  return (
+    body.properties?.description ||
+    body.description ||
+    body.desc ||
+    body.properties?.说明 ||
+    ""
+  );
+}
+
+function toArray(value) {
+  if (Array.isArray(value)) {
+    return value;
+  }
+
+  if (value) {
+    return [value];
+  }
+
+  return [];
+}
+
+function getTreatmentSuggestions(body, typeMeta) {
+  const standardSuggestions = toArray(body.treatmentSuggestions);
+  const legacySuggestions = toArray(body.suggestions);
+
+  if (standardSuggestions.length > 0) {
+    return standardSuggestions;
+  }
+
+  if (legacySuggestions.length > 0) {
+    return legacySuggestions;
+  }
+
+  return typeMeta.treatmentSuggestions || [];
+}
+
 export function enrichRiskBody(body = {}) {
-  const typeMeta = riskTypeMeta[body.riskType] || {};
-  const levelMeta = riskLevelMeta[body.riskLevel] || {};
+  const normalizedRiskType = normalizeRiskType(body.riskType, body.type);
+  const normalizedRiskLevel = body.riskLevel || body.level || "medium";
+  const typeMeta = riskTypeMeta[normalizedRiskType] || {};
+  const levelMeta = riskLevelMeta[normalizedRiskLevel] || {};
   const fileSection = body.fileSection || typeMeta.fileSection || "";
-  const treatmentSuggestions =
-    body.treatmentSuggestions || typeMeta.treatmentSuggestions || [];
+  const description = getDescription(body);
+  const treatmentSuggestions = getTreatmentSuggestions(body, typeMeta);
+  const influenceRadius =
+    body.influenceRadius ?? body.radius ?? body.influenceRange ?? typeMeta.influenceRadius ?? 0;
+  const riskTypeLabel =
+    body.riskTypeLabel || body.label || typeMeta.label || "未知风险";
 
   return {
     ...body,
     id: body.id || body.code || "",
     code: body.code || body.id || "",
     name: body.name || body.code || body.id || "未命名风险体",
+    // compatibility: 旧版组件可能使用 type 判断对象类型，标准分类使用 riskType。
     type: body.type || body.riskType || "risk_body",
-    riskType: body.riskType || "",
-    riskTypeLabel: body.riskTypeLabel || typeMeta.label || "未知风险",
+    riskType: normalizedRiskType,
+    riskTypeLabel,
     riskCategory: body.riskCategory || typeMeta.category || "unknown",
     fileSection,
     fileSectionName:
@@ -241,19 +320,35 @@ export function enrichRiskBody(body = {}) {
       fileSectionMeta[fileSection] ||
       "",
     geometryType: getDefaultGeometryType(body, typeMeta),
-    position: Array.isArray(body.position) ? body.position : [],
-    size: Array.isArray(body.size) ? body.size : [],
-    points: Array.isArray(body.points) ? body.points : [],
-    riskLevel: body.riskLevel || "",
+    position: body.position ?? [],
+    size: body.size ?? [],
+    points: body.points ?? [],
+    riskLevel: normalizedRiskLevel,
     riskLevelLabel: body.riskLevelLabel || levelMeta.label || "未分级",
-    influenceRadius: body.influenceRadius ?? body.influenceRange ?? 0,
+    influenceRadius,
     color: body.color || typeMeta.defaultColor || levelMeta.color || "#94A3B8",
     visible: body.visible ?? true,
-    properties: body.properties || {},
     treatmentSuggestions: [...treatmentSuggestions],
     warningRules: {
       ...(typeMeta.warningRules || {}),
       ...(body.warningRules || {}),
+    },
+    // compatibility: level 为旧版风险等级字段，新逻辑统一使用 riskLevel。
+    level: body.level || normalizedRiskLevel,
+    // compatibility: label 为旧版显示标签字段，新逻辑统一使用 riskTypeLabel。
+    label: body.label || riskTypeLabel,
+    // compatibility: radius 为旧版影响范围字段，新逻辑统一使用 influenceRadius。
+    radius: body.radius ?? influenceRadius,
+    // compatibility: suggestions 为旧版治理建议字段，新逻辑统一使用 treatmentSuggestions。
+    suggestions: body.suggestions || [...treatmentSuggestions],
+    // compatibility: description 为旧版描述字段，同时同步到 properties.description。
+    description: body.description || description,
+    // compatibility: desc 为旧版短描述字段，继续与 description 共存。
+    desc: body.desc || description,
+    properties: {
+      ...(body.properties || {}),
+      // compatibility: 保留中文 properties，同时提供标准 description 入口。
+      description,
     },
   };
 }
