@@ -2,10 +2,9 @@ import { Canvas } from "@react-three/fiber";
 import SceneEnvironment from "./SceneEnvironment";
 import GasLayerGroup from "./layerGroups/GasLayerGroup";
 import GeologyLayerGroup from "./layerGroups/GeologyLayerGroup";
+import HiddenHazardLayerGroup from "./layerGroups/HiddenHazardLayerGroup";
 import HydrologyLayerGroup from "./layerGroups/HydrologyLayerGroup";
 import MiningLayerGroup from "./layerGroups/MiningLayerGroup";
-import BoreholeLayer from "../geology/BoreholeLayer";
-import HiddenHazardLayer from "../geology/HiddenHazardLayer";
 import MeasurePointLayer from "../warning/MeasurePointLayer";
 import RiskRangeLayer from "../warning/RiskRangeLayer";
 import WarningPointLayer from "../warning/WarningPointLayer";
@@ -164,41 +163,15 @@ export default function GeoScene({
           softLayers={softLayers}
         />
 
-        {layers.smallMineDamageAreas && (
-          <HiddenHazardLayer
-            items={smallMineDamageAreas}
-            opacity={opacities.smallMineDamageAreas}
-          />
-        )}
-
-        {layers.goafAreas && (
-          <HiddenHazardLayer items={goafAreas} opacity={opacities.goafAreas} />
-        )}
-
-        {layers.abandonedShafts && (
-          <BoreholeLayer
-            items={abandonedShafts}
-            opacity={opacities.abandonedShafts}
-            color="#FDE68A"
-            radius={5}
-          />
-        )}
-
-        {layers.poorSealedBoreholes && (
-          <BoreholeLayer
-            items={poorSealedBoreholes}
-            opacity={opacities.poorSealedBoreholes}
-            color="#FBBF24"
-            radius={4}
-          />
-        )}
-
-        {layers.faultInfluenceZones && (
-          <HiddenHazardLayer
-            items={faultInfluenceZones}
-            opacity={opacities.faultInfluenceZones}
-          />
-        )}
+        <HiddenHazardLayerGroup
+          layers={layers}
+          opacities={opacities}
+          smallMineDamageAreas={smallMineDamageAreas}
+          goafAreas={goafAreas}
+          abandonedShafts={abandonedShafts}
+          poorSealedBoreholes={poorSealedBoreholes}
+          faultInfluenceZones={faultInfluenceZones}
+        />
 
         {layers.riskRanges && (
           <RiskRangeLayer items={riskRanges} opacity={opacities.riskRanges} />
