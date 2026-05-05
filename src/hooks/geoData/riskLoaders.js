@@ -2,23 +2,12 @@ import {
   fetchAbandonedShafts,
   fetchFaultInfluenceZones,
   fetchGoafAreas,
-  fetchMeasurePoints,
   fetchPoorSealedBoreholes,
   fetchRiskBodies,
-  fetchRiskRanges,
   fetchSmallMineDamageAreas,
-  fetchSoftLayers,
 } from "../../api/geoApi";
 
 export const riskLoaders = new Map([
-  [
-    "softLayers",
-    {
-      fetcher: fetchSoftLayers,
-      defaultValue: [],
-      critical: false,
-    },
-  ],
   [
     "smallMineDamageAreas",
     {
@@ -55,22 +44,6 @@ export const riskLoaders = new Map([
     "faultInfluenceZones",
     {
       fetcher: fetchFaultInfluenceZones,
-      defaultValue: [],
-      critical: false,
-    },
-  ],
-  [
-    "riskRanges",
-    {
-      fetcher: fetchRiskRanges,
-      defaultValue: [],
-      critical: false,
-    },
-  ],
-  [
-    "measurePoints",
-    {
-      fetcher: fetchMeasurePoints,
       defaultValue: [],
       critical: false,
     },

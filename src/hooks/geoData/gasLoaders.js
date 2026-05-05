@@ -2,6 +2,7 @@ import {
   fetchGasContentPoints,
   fetchGasPressurePoints,
   fetchGasRichAreas,
+  fetchSoftLayers,
 } from "../../api/geoApi";
 
 export const gasLoaders = new Map([
@@ -25,6 +26,14 @@ export const gasLoaders = new Map([
     "gasPressurePoints",
     {
       fetcher: fetchGasPressurePoints,
+      defaultValue: [],
+      critical: false,
+    },
+  ],
+  [
+    "softLayers",
+    {
+      fetcher: fetchSoftLayers,
       defaultValue: [],
       critical: false,
     },
