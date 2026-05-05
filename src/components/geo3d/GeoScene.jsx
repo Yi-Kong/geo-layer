@@ -1,6 +1,5 @@
 import * as THREE from "three";
-import { useRef } from "react";
-import { Canvas, useFrame } from "@react-three/fiber";
+import { Canvas } from "@react-three/fiber";
 import {
   GizmoHelper,
   GizmoViewport,
@@ -30,236 +29,23 @@ import WarningPointLayer from "../warning/WarningPointLayer";
 import { useLayerStore } from "../../store/layerStore";
 import { useSelectionStore } from "../../store/selectionStore";
 import { moveBoundary } from "../../utils/distance";
+import {
+  DEFAULT_HIGHLIGHT_COLOR,
+  clamp,
+  getBodyCenter,
+  getDefaultWorkingFaceId,
+  getHighlightRadius,
+  getRiskBodyWarning,
+  getRiskColor,
+  getRiskLevel,
+  getWarningKey,
+  getWarningLevel,
+  isRiskBodyLayerVisible,
+  shouldShowWarningDistanceLine,
+} from "../../utils/riskSceneUtils";
+import RiskHighlightOverlay from "./overlays/RiskHighlightOverlay";
 
-const RISK_LEVEL_COLORS = {
-  low: "#2A9D8F",
-  medium: "#E9C46A",
-  high: "#F4A261",
-  critical: "#E63946",
-};
-
-const DEFAULT_HIGHLIGHT_COLOR = "#facc15";
-const HIGH_PRIORITY_LEVELS = ["critical", "high"];
 const DISABLE_RAYCAST = () => null;
-
-const RISK_BODY_LAYER_BY_TYPE = {
-  goaf_water: "goafWaterAreas",
-  goaf_water_area: "goafWaterAreas",
-  water_inrush: "waterRichAreas",
-  water_rich_area: "waterRichAreas",
-  gas: "gasRichAreas",
-  gas_rich_area: "gasRichAreas",
-  soft_layer: "softLayers",
-  small_mine_damage: "smallMineDamageAreas",
-  small_mine_damage_area: "smallMineDamageAreas",
-  goaf: "goafAreas",
-  goaf_area: "goafAreas",
-  abandoned_shaft: "abandonedShafts",
-  poor_sealed_borehole: "poorSealedBoreholes",
-  fault_influence: "faultInfluenceZones",
-  fault_influence_zone: "faultInfluenceZones",
-};
-
-function toFiniteNumber(value, fallback = 0) {
-  const number = Number(value);
-
-  return Number.isFinite(number) ? number : fallback;
-}
-
-function getSafePoint(point) {
-  if (!Array.isArray(point)) {
-    return [0, 0, 0];
-  }
-
-  return [
-    toFiniteNumber(point[0]),
-    toFiniteNumber(point[1]),
-    toFiniteNumber(point[2]),
-  ];
-}
-
-function getBodyPointSource(body) {
-  if (Array.isArray(body?.points) && body.points.length > 0) {
-    return body.points;
-  }
-
-  if (Array.isArray(body?.boundary) && body.boundary.length > 0) {
-    return body.boundary;
-  }
-
-  return [];
-}
-
-function getBodyCenter(body) {
-  if (!body) {
-    return [0, 0, 0];
-  }
-
-  if (Array.isArray(body.position) && body.position.length >= 3) {
-    return getSafePoint(body.position);
-  }
-
-  const points = getBodyPointSource(body);
-
-  if (points.length === 0) {
-    return [0, 0, 0];
-  }
-
-  const total = points.reduce(
-    (sum, point) => {
-      const safePoint = getSafePoint(point);
-
-      return [
-        sum[0] + safePoint[0],
-        sum[1] + safePoint[1],
-        sum[2] + safePoint[2],
-      ];
-    },
-    [0, 0, 0]
-  );
-
-  return total.map((value) => value / points.length);
-}
-
-function getBodySize(body) {
-  if (Array.isArray(body?.size) && body.size.length > 0) {
-    return [0, 1, 2].map((index) =>
-      Math.max(1, Math.abs(toFiniteNumber(body.size[index], 1)))
-    );
-  }
-
-  const points = getBodyPointSource(body);
-
-  if (points.length > 0) {
-    const bounds = points.reduce(
-      (result, point) => {
-        const safePoint = getSafePoint(point);
-
-        safePoint.forEach((value, index) => {
-          result.min[index] = Math.min(result.min[index], value);
-          result.max[index] = Math.max(result.max[index], value);
-        });
-
-        return result;
-      },
-      {
-        min: [Infinity, Infinity, Infinity],
-        max: [-Infinity, -Infinity, -Infinity],
-      }
-    );
-
-    return bounds.max.map((value, index) =>
-      Math.max(1, value - bounds.min[index])
-    );
-  }
-
-  return [1, 1, 1];
-}
-
-function clamp(value, min, max) {
-  return Math.max(min, Math.min(max, value));
-}
-
-function getInfluenceRadius(body) {
-  const radius = toFiniteNumber(
-    body?.influenceRadius ?? body?.influenceRange ?? body?.radius,
-    NaN
-  );
-
-  if (Number.isFinite(radius) && radius > 0) {
-    return clamp(radius, 18, 260);
-  }
-
-  const size = getBodySize(body);
-  const maxSize = Math.max(...size);
-
-  if (maxSize > 0) {
-    return clamp(maxSize * 0.75, 18, 220);
-  }
-
-  return 34;
-}
-
-function getHighlightRadius(body) {
-  const size = getBodySize(body);
-  const maxSize = Math.max(...size);
-
-  return clamp(maxSize * 0.22, 12, 46);
-}
-
-function getWarningLevel(warning) {
-  return warning?.level || warning?.riskLevel || "none";
-}
-
-function getRiskLevel(body) {
-  return body?.riskLevel || body?.level || "none";
-}
-
-function getRiskColor(body, warning) {
-  const warningLevel = getWarningLevel(warning);
-  const riskLevel = getRiskLevel(body);
-
-  return (
-    warning?.color ||
-    body?.color ||
-    RISK_LEVEL_COLORS[warningLevel] ||
-    RISK_LEVEL_COLORS[riskLevel] ||
-    DEFAULT_HIGHLIGHT_COLOR
-  );
-}
-
-function getRiskBodyWarning(riskBodyId, generatedWarnings = []) {
-  if (!riskBodyId) {
-    return null;
-  }
-
-  return (
-    generatedWarnings.find((warning) => warning.riskBodyId === riskBodyId) ||
-    null
-  );
-}
-
-function shouldShowWarningDistanceLine(warning, selectedRiskBodyId) {
-  if (selectedRiskBodyId) {
-    return warning.riskBodyId === selectedRiskBodyId;
-  }
-
-  return HIGH_PRIORITY_LEVELS.includes(getWarningLevel(warning));
-}
-
-function getWarningKey(warning, index) {
-  return (
-    warning?.id ||
-    `${warning?.workingFaceId || "working-face"}-${warning?.riskBodyId || "risk-body"}-${index}`
-  );
-}
-
-function getDefaultWorkingFaceId(workingFaces) {
-  return (
-    workingFaces.find(
-      (face) =>
-        face.status === "mining" ||
-        face.stage === "active" ||
-        face.stage === "mining"
-    )?.id ||
-    workingFaces[0]?.id ||
-    ""
-  );
-}
-
-function getRiskBodyLayerId(body) {
-  return (
-    RISK_BODY_LAYER_BY_TYPE[body?.riskType] ||
-    RISK_BODY_LAYER_BY_TYPE[body?.type] ||
-    null
-  );
-}
-
-function isRiskBodyLayerVisible(body, layers = {}) {
-  const layerId = getRiskBodyLayerId(body);
-
-  return !layerId || layers[layerId] !== false;
-}
 
 function buildMovedWorkingFace(workingFace, advanceDistance) {
   if (!workingFace) {
@@ -321,135 +107,6 @@ function WarningMarker({ body, color = DEFAULT_HIGHLIGHT_COLOR }) {
           depthWrite={false}
         />
       </mesh>
-    </group>
-  );
-}
-
-function InfluenceRange({ body, color = DEFAULT_HIGHLIGHT_COLOR }) {
-  const center = getBodyCenter(body);
-  const radius = getInfluenceRadius(body);
-
-  if (!Number.isFinite(radius) || radius <= 0) {
-    return null;
-  }
-
-  return (
-    <group>
-      <mesh raycast={DISABLE_RAYCAST} position={center}>
-        <sphereGeometry args={[radius, 32, 16]} />
-        <meshBasicMaterial
-          color={color}
-          transparent
-          opacity={0.08}
-          depthWrite={false}
-          side={THREE.DoubleSide}
-        />
-      </mesh>
-      <mesh
-        raycast={DISABLE_RAYCAST}
-        position={[center[0], center[1] - 2, center[2]]}
-        rotation={[-Math.PI / 2, 0, 0]}
-      >
-        <ringGeometry args={[radius * 0.92, radius, 64]} />
-        <meshBasicMaterial
-          color={color}
-          transparent
-          opacity={0.36}
-          side={THREE.DoubleSide}
-          depthWrite={false}
-        />
-      </mesh>
-    </group>
-  );
-}
-
-function PulseRing({ body, color = DEFAULT_HIGHLIGHT_COLOR }) {
-  const ref = useRef(null);
-  const elapsedRef = useRef(0);
-  const center = getBodyCenter(body);
-  const radius = getInfluenceRadius(body);
-
-  useFrame((_, delta) => {
-    if (!ref.current) {
-      return;
-    }
-
-    elapsedRef.current += delta;
-
-    const wave = Math.sin(elapsedRef.current * 2.4);
-    const scale = 1 + wave * 0.06;
-    const opacity = 0.26 + wave * 0.08;
-
-    ref.current.scale.setScalar(scale);
-
-    if (ref.current.material) {
-      ref.current.material.opacity = opacity;
-    }
-  });
-
-  if (!Number.isFinite(radius) || radius <= 0) {
-    return null;
-  }
-
-  return (
-    <mesh
-      ref={ref}
-      raycast={DISABLE_RAYCAST}
-      position={[center[0], center[1] + 0.5, center[2]]}
-      rotation={[-Math.PI / 2, 0, 0]}
-    >
-      <ringGeometry args={[radius * 0.72, radius, 64]} />
-      <meshBasicMaterial
-        color={color}
-        transparent
-        opacity={0.26}
-        side={THREE.DoubleSide}
-        depthWrite={false}
-      />
-    </mesh>
-  );
-}
-
-function RiskBodyHighlight({
-  body,
-  color = DEFAULT_HIGHLIGHT_COLOR,
-  showInfluenceRange = true,
-  pulse = false,
-}) {
-  const center = getBodyCenter(body);
-  const size = getBodySize(body);
-  const radius = getHighlightRadius(body);
-  const ringRadius = clamp(getInfluenceRadius(body) * 0.18, radius * 1.2, 64);
-  const markerY = center[1] + radius * 0.45 + 12;
-  const ringY = center[1] - Math.min(size[1] * 0.5, 10);
-
-  return (
-    <group>
-      {showInfluenceRange && <InfluenceRange body={body} color={color} />}
-      <mesh raycast={DISABLE_RAYCAST} position={[center[0], markerY, center[2]]}>
-        <sphereGeometry args={[radius, 24, 24]} />
-        <meshBasicMaterial
-          color={color}
-          transparent
-          opacity={0.24}
-          depthWrite={false}
-        />
-      </mesh>
-      <mesh
-        raycast={DISABLE_RAYCAST}
-        position={[center[0], ringY, center[2]]}
-        rotation={[-Math.PI / 2, 0, 0]}
-      >
-        <ringGeometry args={[ringRadius * 0.82, ringRadius, 64]} />
-        <meshBasicMaterial
-          color={color}
-          transparent
-          opacity={0.72}
-          side={THREE.DoubleSide}
-          depthWrite={false}
-        />
-      </mesh>
-      {pulse && <PulseRing body={body} color={color} />}
     </group>
   );
 }
@@ -775,11 +432,11 @@ export default function GeoScene({
           })}
 
         {highlightedRiskBody && (
-          <RiskBodyHighlight
-            body={highlightedRiskBody}
+          <RiskHighlightOverlay
+            riskBody={highlightedRiskBody}
             color={highlightColor}
+            level={highlightedLevel}
             showInfluenceRange
-            pulse={highlightedLevel === "critical"}
           />
         )}
       </group>
