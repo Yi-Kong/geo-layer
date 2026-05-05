@@ -5,9 +5,7 @@ import GeologyLayerGroup from "./layerGroups/GeologyLayerGroup";
 import HiddenHazardLayerGroup from "./layerGroups/HiddenHazardLayerGroup";
 import HydrologyLayerGroup from "./layerGroups/HydrologyLayerGroup";
 import MiningLayerGroup from "./layerGroups/MiningLayerGroup";
-import MeasurePointLayer from "../warning/MeasurePointLayer";
-import RiskRangeLayer from "../warning/RiskRangeLayer";
-import WarningPointLayer from "../warning/WarningPointLayer";
+import WarningLayerGroup from "./layerGroups/WarningLayerGroup";
 import { useLayerStore } from "../../store/layerStore";
 import { useSelectionStore } from "../../store/selectionStore";
 import {
@@ -173,21 +171,13 @@ export default function GeoScene({
           faultInfluenceZones={faultInfluenceZones}
         />
 
-        {layers.riskRanges && (
-          <RiskRangeLayer items={riskRanges} opacity={opacities.riskRanges} />
-        )}
-
-        {layers.measures && (
-          <MeasurePointLayer items={measurePoints} opacity={opacities.measures} />
-        )}
-
-        {layers.warnings &&
-          warningPoints.length > 0 && (
-            <WarningPointLayer
-              items={warningPoints}
-              opacity={opacities.warnings}
-            />
-          )}
+        <WarningLayerGroup
+          layers={layers}
+          opacities={opacities}
+          warningPoints={warningPoints}
+          riskRanges={riskRanges}
+          measurePoints={measurePoints}
+        />
 
         <WarningOverlay
           visible={layers.warnings}
