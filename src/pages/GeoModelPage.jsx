@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useEffect } from "react";
 import Header from "../components/Header";
 import GeoScene from "../components/geo3d/GeoScene";
 import AdvanceSlider from "../components/mining/AdvanceSlider";
@@ -7,14 +7,14 @@ import LayerPanel from "../components/panels/LayerPanel";
 import RiskBodyDetailPanel from "../components/panels/RiskBodyDetailPanel";
 import WarningPanel from "../components/panels/WarningPanel";
 import WorkingFaceInfoPanel from "../components/panels/WorkingFaceInfoPanel";
+import { useGeneratedWarnings } from "../hooks/useGeneratedWarnings";
 import { useGeoData } from "../hooks/useGeoData";
 import { useLayerControl } from "../hooks/useLayerControl";
+import { useLegacyLayerSelection } from "../hooks/useLegacyLayerSelection";
 import { useRiskSelection } from "../hooks/useRiskSelection";
 import { useWorkingFaceSelection } from "../hooks/useWorkingFaceSelection";
-import { generateWarningsByAdvance } from "../services/warningService";
 import { useLayerStore } from "../store/layerStore";
 import { useSelectionStore } from "../store/selectionStore";
-import { useWarningStore } from "../store/warningStore";
 
 export default function GeoModelPage() {
   const {
@@ -28,8 +28,6 @@ export default function GeoModelPage() {
   } = useLayerControl();
   const setSelectedObject = useSelectionStore((state) => state.setSelectedObject);
   const selectedObject = useSelectionStore((state) => state.selectedObject);
-  const setWarnings = useWarningStore((state) => state.setWarnings);
-  const activeWarnings = useWarningStore((state) => state.warnings);
   const loadLayerConfig = useLayerStore((state) => state.loadLayerConfig);
   const {
     mineInfo,
@@ -89,44 +87,18 @@ export default function GeoModelPage() {
     loadLayerConfig();
   }, [loadLayerConfig]);
 
-  useEffect(() => {
-    setWarnings(
-      generateWarningsByAdvance(
-        workingFaces,
-        riskBodies,
-        advanceDistance,
-        selectedWorkingFaceId
-      )
-    );
-  }, [
-    advanceDistance,
-    riskBodies,
-    selectedWorkingFaceId,
-    setWarnings,
+  const activeWarnings = useGeneratedWarnings({
     workingFaces,
-  ]);
-
-  const handleSelectLegacyLayer = useCallback((layerId) => {
-    setSelectedLayerId(layerId);
-    clearSelectedRiskBody();
-
-    const layer = layerData.find((item) => item.id === layerId);
-
-    if (layer) {
-      setSelectedObject({
-        ...layer,
-        type: "legacy_stratum",
-        code: `LEGACY-${layer.id}`,
-        properties: {
-          lithology: layer.lithology,
-          age: layer.age,
-          porosity: layer.porosity,
-          permeability: layer.permeability,
-          description: layer.description,
-        },
-      });
-    }
-  }, [clearSelectedRiskBody, layerData, setSelectedLayerId, setSelectedObject]);
+    riskBodies,
+    advanceDistance,
+    selectedWorkingFaceId,
+  });
+  const handleSelectLegacyLayer = useLegacyLayerSelection({
+    layerData,
+    setSelectedLayerId,
+    setSelectedObject,
+    clearSelectedRiskBody,
+  });
 
   return (
     <div className="relative h-screen w-screen overflow-hidden bg-slate-950">

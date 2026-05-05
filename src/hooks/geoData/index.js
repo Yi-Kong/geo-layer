@@ -7,6 +7,7 @@ import { warningLoaders } from "./warningLoaders";
 import { waterLoaders } from "./waterLoaders";
 
 export { geoDataDefaults } from "./geoDataDefaults";
+export { loadGeoConfig } from "./geoConfigLoaders";
 
 const loaderGroups = [
   mineLoaders,

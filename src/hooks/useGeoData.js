@@ -1,8 +1,73 @@
 import { useEffect, useState } from "react";
-import { fetchTreatmentMeasures, fetchWarningRules } from "../api/geoApi";
-import { setTreatmentMeasures } from "../services/measureService";
-import { setWarningRules } from "../services/warningService";
-import { geoDataDefaults, geoDataLoaders } from "./geoData";
+import { geoDataDefaults, geoDataLoaders, loadGeoConfig } from "./geoData";
+
+async function loadGeoDataEntries(loaderEntries) {
+  const settledResults = await Promise.allSettled(
+    loaderEntries.map(async ([key, loader]) => {
+      const value = await loader.fetcher();
+      return [key, value];
+    })
+  );
+
+  const nextGeoData = { ...geoDataDefaults };
+  const failedLoaders = [];
+
+  settledResults.forEach((result, index) => {
+    const [key, loader] = loaderEntries[index];
+
+    if (result.status === "fulfilled") {
+      const [, value] = result.value;
+      nextGeoData[key] = value;
+      return;
+    }
+
+    nextGeoData[key] = loader.defaultValue;
+    failedLoaders.push({
+      key,
+      critical: Boolean(loader.critical),
+      reason: result.reason,
+    });
+  });
+
+  return {
+    nextGeoData,
+    failedLoaders,
+  };
+}
+
+function groupGeoDataFailures(failedLoaders) {
+  return {
+    criticalFailures: failedLoaders.filter((item) => item.critical),
+    nonCriticalFailures: failedLoaders.filter((item) => !item.critical),
+  };
+}
+
+function reportGeoDataFailures({ criticalFailures, nonCriticalFailures }) {
+  if (nonCriticalFailures.length > 0) {
+    console.warn("Non-critical geo data failed to load:", nonCriticalFailures);
+  }
+
+  if (criticalFailures.length > 0) {
+    console.error("Critical geo data failed to load:", criticalFailures);
+  }
+}
+
+function createCriticalGeoDataError(criticalFailures) {
+  return new Error(
+    `关键地质数据加载失败：${criticalFailures
+      .map((item) => item.key)
+      .join(", ")}`
+  );
+}
+
+async function loadOptionalGeoConfig() {
+  try {
+    return await loadGeoConfig();
+  } catch (error) {
+    console.warn("Optional geo config failed to load:", error);
+    return null;
+  }
+}
 
 export function useGeoData() {
   const [geoData, setGeoData] = useState(geoDataDefaults);
@@ -18,69 +83,22 @@ export function useGeoData() {
         setError(null);
 
         const loaderEntries = [...geoDataLoaders.entries()];
-        const [settledResults, warningRulesData, treatmentMeasuresData] =
-          await Promise.all([
-            Promise.allSettled(
-              loaderEntries.map(async ([key, loader]) => {
-                const value = await loader.fetcher();
-                return [key, value];
-              })
-            ),
-            fetchWarningRules(),
-            fetchTreatmentMeasures(),
-          ]);
+        const [{ nextGeoData, failedLoaders }] = await Promise.all([
+          loadGeoDataEntries(loaderEntries),
+          loadOptionalGeoConfig(),
+        ]);
+        const { criticalFailures, nonCriticalFailures } =
+          groupGeoDataFailures(failedLoaders);
 
-        if (cancelled) {
-          return;
-        }
+        reportGeoDataFailures({ criticalFailures, nonCriticalFailures });
 
-        setWarningRules(warningRulesData);
-        setTreatmentMeasures(treatmentMeasuresData);
-
-        const nextGeoData = {};
-        const failedLoaders = [];
-
-        settledResults.forEach((result, index) => {
-          const [key, loader] = loaderEntries[index];
-
-          if (result.status === "fulfilled") {
-            const [, value] = result.value;
-            nextGeoData[key] = value;
-            return;
+        if (!cancelled) {
+          if (criticalFailures.length > 0) {
+            setError(createCriticalGeoDataError(criticalFailures));
           }
 
-          nextGeoData[key] = loader.defaultValue;
-          failedLoaders.push({
-            key,
-            critical: Boolean(loader.critical),
-            reason: result.reason,
-          });
-        });
-
-        const criticalFailures = failedLoaders.filter((item) => item.critical);
-        const nonCriticalFailures = failedLoaders.filter(
-          (item) => !item.critical
-        );
-
-        if (nonCriticalFailures.length > 0) {
-          console.warn(
-            "Non-critical geo data failed to load:",
-            nonCriticalFailures
-          );
+          setGeoData(nextGeoData);
         }
-
-        if (criticalFailures.length > 0) {
-          console.error("Critical geo data failed to load:", criticalFailures);
-          setError(
-            new Error(
-              `关键地质数据加载失败：${criticalFailures
-                .map((item) => item.key)
-                .join(", ")}`
-            )
-          );
-        }
-
-        setGeoData(nextGeoData);
       } catch (error) {
         console.error("Failed to load geo data:", error);
 
