@@ -1,12 +1,9 @@
 import { Canvas } from "@react-three/fiber";
 import SceneEnvironment from "./SceneEnvironment";
 import GeologyLayerGroup from "./layerGroups/GeologyLayerGroup";
+import HydrologyLayerGroup from "./layerGroups/HydrologyLayerGroup";
 import BoreholeLayer from "../geology/BoreholeLayer";
 import HiddenHazardLayer from "../geology/HiddenHazardLayer";
-import AquiferLayer from "../hydrology/AquiferLayer";
-import GoafWaterLayer from "../hydrology/GoafWaterLayer";
-import WaterInrushPointLayer from "../hydrology/WaterInrushPointLayer";
-import WaterRichLayer from "../hydrology/WaterRichLayer";
 import MiningPathLayer from "../mining/MiningPathLayer";
 import TunnelLayer from "../mining/TunnelLayer";
 import WorkingFaceLayer from "../mining/WorkingFaceLayer";
@@ -142,9 +139,14 @@ export default function GeoScene({
           onSelectLayer={onSelectLayer}
         />
 
-        {layers.aquifers && (
-          <AquiferLayer items={aquifers} opacity={opacities.aquifers} />
-        )}
+        <HydrologyLayerGroup
+          layers={layers}
+          opacities={opacities}
+          aquifers={aquifers}
+          goafWaterAreas={goafWaterAreas}
+          waterRichAreas={waterRichAreas}
+          waterInrushPoints={waterInrushPoints}
+        />
 
         {layers.tunnels && (
           <TunnelLayer items={tunnels} opacity={opacities.tunnels} />
@@ -162,27 +164,6 @@ export default function GeoScene({
 
         {layers.miningPaths && (
           <MiningPathLayer items={miningPaths} opacity={opacities.miningPaths} />
-        )}
-
-        {layers.goafWaterAreas && (
-          <GoafWaterLayer
-            items={goafWaterAreas}
-            opacity={opacities.goafWaterAreas}
-          />
-        )}
-
-        {layers.waterRichAreas && (
-          <WaterRichLayer
-            items={waterRichAreas}
-            opacity={opacities.waterRichAreas}
-          />
-        )}
-
-        {layers.waterInrushPoints && (
-          <WaterInrushPointLayer
-            items={waterInrushPoints}
-            opacity={opacities.waterInrushPoints}
-          />
         )}
 
         {layers.gasRichAreas && (
