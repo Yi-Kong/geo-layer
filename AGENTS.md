@@ -1,895 +1,378 @@
 # AGENTS.md
 
-## 项目概述
+## 项目定位
 
-本仓库为 `geo-layer`。
+本仓库是 `geo-layer-demo`，一个基于 React + Vite + React Three Fiber 的三维地质可视化前端原型。
 
-该项目是一个用于 **三维地质层可视化** 的前端原型。它旨在作为透明地质系统的可视化基础，并在后续阶段作为煤矿预警场景中的三维可视化模块。
+当前项目已经从单纯的地质分层演示扩展为一个轻量的透明地质 / 矿山安全场景前端 demo，包含：
 
-当前定位：
+- 三维地层、煤层、断层、陷落柱、钻孔等地质对象展示。
+- 巷道、采掘工作面、推进距离等生产对象展示。
+- 含水层、采空积水区、富水区、突水点等水文对象展示。
+- 瓦斯富集区、瓦斯含量 / 压力测点、软弱层等瓦斯对象展示。
+- 隐蔽致灾体、风险范围、治理措施点、预警点位和前端生成的预警提示。
+- 图层分组、显隐、透明度控制、对象选择和信息面板。
 
-- 这是一个 React + Vite 前端项目。
-- 三维场景通过 React Three Fiber 使用 Three.js 实现。
-- 地质层数据当前从静态 JSON 数据中加载。
-- 当前重点是实现地质层的三维半透明分层显示。
-- 本项目目前还不是一个完整的透明地质系统。
-- 本项目目前还不是一个完整的煤矿安全预警系统。
-- 除非任务明确要求，否则不要添加后端、数据库、机器学习或实时预警逻辑。
+项目边界仍然是 **前端三维可视化原型**。除非用户明确要求，不要把它扩展成完整后端系统、真实透明地质平台、真实煤矿安全预警系统或生产级数据平台。
 
-当前目标是保持项目轻量、易理解，并适合逐步迭代开发。
+## 当前重点
 
----
+开发时优先维护以下目标：
 
-## 当前开发重点
+- 保持三维场景清晰、稳定、可交互。
+- 保持图层和业务对象由 mock/API 数据驱动，不把数据散落硬编码在组件里。
+- 保持 React Three Fiber 组件化写法，继续由 `<Canvas>` 管理场景。
+- 保持前端原型轻量，避免引入重型 GIS、后端、数据库、实时消息或机器学习能力。
+- 在已有模块上小步迭代，避免无关重构和技术栈迁移。
 
-当前阶段的核心任务是：
+当前代码已经包含较多 mock 业务对象。新增能力时，应优先判断它是：
 
-> 基于当前 React Three Fiber 项目，实现地质层半透明分层显示。
+1. 前端 mock 展示；
+2. API 适配层扩展；
+3. 真实业务系统能力。
 
-开发时可以重点参考以下 Codex skills：
-
-- `threejs-geometry`
-- `threejs-materials`
-
-这些 skills 只能作为 Three.js 几何体和材质实现的开发参考，不应改变项目的技术路线。
-
-实现时应遵守以下约束：
-
-- 不要将项目改成原生 Three.js 初始化方式。
-- 不要手写 `scene` / `camera` / `renderer` 初始化代码。
-- 不要手写独立的 `requestAnimationFrame` 主渲染循环。
-- 必须保持 React Three Fiber 写法。
-- 三维场景应继续由 `<Canvas>` 管理。
-- 动画逻辑如有需要，应使用 React Three Fiber 的 `useFrame`。
-- 交互逻辑如有需要，应优先使用 React Three Fiber 的事件系统，例如 `onPointerOver`、`onPointerOut`、`onClick`。
-- 数据继续来自 `public/data/geology-layers.json`。
-- 不要引入后端、数据库、机器学习或实时预警逻辑。
-
----
-
-## 业务背景
-
-本项目应被视为一个 **三维地质可视化原型**。
-
-后续该项目可能演进为更大系统的一部分，包含以下模块：
-
-1. 地质层可视化
-2. 煤层可视化
-3. 断层可视化
-4. 巷道 / 隧道可视化
-5. 钻孔可视化
-6. 工作面可视化
-7. 传感器点位可视化
-8. 瓦斯 / 水害 / 压力预警叠加显示
-9. 预警事件展示
-10. 历史预警回放
-
-但当前仓库应主要聚焦于前端三维可视化。
-
-添加功能时，需要保持系统边界清晰：
-
-- 前端：允许在本仓库中实现
-- 静态演示数据：允许
-- Mock API 结构：允许
-- 后端实现：仅在明确要求时添加
-- 数据库实现：仅在明确要求时添加
-- 预测模型实现：仅在明确要求时添加
-- 实时预警逻辑：仅在明确要求时添加
-
----
+如果用户没有明确要求真实对接或真实算法，默认只做前端 mock 展示和清晰的数据适配。
 
 ## 技术栈
 
-除非用户明确要求更改，否则应使用现有技术栈。
+使用现有技术栈，不要主动迁移：
 
-主要技术：
-
-- React
-- Vite
+- React 19
+- Vite 8
 - JavaScript / JSX
 - Three.js
 - `@react-three/fiber`
 - `@react-three/drei`
-- CSS
+- `@tanstack/react-router`
+- Zustand
+- Tailwind CSS 4 + 普通 CSS
+- MSW mock API
+- Bun
 
-技术约束：
+约束：
 
-- 不要迁移到 TypeScript，除非明确要求。
-- 不要用原生 Three.js 替换 React Three Fiber，除非明确要求。
-- 不要引入 Unity、Cesium、Babylon.js、Unreal 等重型三维引擎，除非明确要求且有充分理由。
-- 不要引入复杂状态管理库，除非当前功能确实需要。
-- 不要引入后端框架。
-- 不要引入数据库。
-- 不要引入机器学习、预测模型或实时告警引擎。
-- 不要随意更换包管理器，例如从 bun 改为 npm、yarn 或 pnpm，除非任务明确要求。
+- 不要迁移到 TypeScript，除非用户明确要求。
+- 不要把 React Three Fiber 改成原生 Three.js 主循环。
+- 不要引入 `react-router-dom`。
+- 不要把 Zustand 替换成 Redux、MobX 或其他状态库。
+- 不要引入 Cesium、Babylon.js、Unity、Unreal 等重型三维 / GIS 引擎，除非用户明确要求且理由充分。
+- 不要引入后端框架、数据库驱动、MQTT、Kafka、Flink、WebSocket 实时链路或机器学习依赖，除非任务明确要求。
+- 不要随意更换包管理器，不要删除 `bun.lock`。
 
----
+## 目录结构
 
-## 路由结构
-
-本项目已接入 TanStack Router，当前采用 code-based route 配置。
-
-当前路由相关文件：
-
-```text
-src/
-├── App.jsx
-├── router.jsx
-└── pages/
-    └── GeoModelPage.jsx
-```
-
-当前路由：
-
-| 路径 | 页面组件 | 说明 |
-|---|---|---|
-| `/` | `GeoModelPage` | 三维透明地质主页面 |
-| `/geo-model` | `GeoModelPage` | 三维透明地质主页面别名 |
-
-路由开发约束：
-
-- 路由必须使用 `@tanstack/react-router`。
-- 不要引入或使用 `react-router-dom`。
-- 当前项目继续使用 JavaScript / JSX，不要为了路由迁移到 TypeScript。
-- `App.jsx` 只负责渲染 `RouterProvider`，不要重新堆叠三维业务逻辑。
-- `src/router.jsx` 负责集中维护当前路由树。
-- `src/pages/GeoModelPage.jsx` 承载当前三维透明地质主页面。
-- 新增页面时优先在 `src/pages/` 下创建页面组件，再在 `src/router.jsx` 中扩展路由。
-- 当前没有使用 TanStack 文件路由，因此不需要配置 `@tanstack/router-plugin`。
-- 如果未来改用文件路由，需要安装并配置 `@tanstack/router-plugin`，且 `vite.config.js` 中 `tanstackRouter()` 应放在 `react()` 前面。
-- 不要为了新增路由改变现有三维场景、图层控制、信息面板、预警面板、推进滑块或 mock 数据逻辑。
-
----
-
-## React Three Fiber 开发规则
-
-本项目必须保持 React Three Fiber 风格。
-
-允许：
-
-- 使用 `<Canvas>` 创建三维场景。
-- 使用 R3F 组件化方式组织 Mesh、材质、光照、控制器。
-- 使用 `@react-three/drei` 中的轻量辅助组件。
-- 使用 `useFrame` 实现必要的动画。
-- 使用 R3F 指针事件实现交互。
-- 使用 Three.js 的几何体、材质、颜色、向量、BufferGeometry 等底层能力。
-
-不允许，除非任务明确要求：
-
-- 手动创建 `new THREE.Scene()` 作为主场景。
-- 手动创建 `new THREE.WebGLRenderer()` 作为主渲染器。
-- 手动创建独立的主渲染循环替代 R3F。
-- 在 React 生命周期外直接长期操作 DOM canvas。
-- 绕过 R3F 组件体系重写整个三维场景。
-
-如果参考 Three.js 原生示例，必须将其转换为 React Three Fiber 写法。
-
----
-
-## Codex Skills 使用说明
-
-本项目可以使用 Codex skills 辅助开发。
-
-推荐的 skills 存放路径：
-
-```text
-.agents/
-└── skills/
-    ├── threejs-geometry/
-    │   └── SKILL.md
-    ├── threejs-materials/
-    │   └── SKILL.md
-    ├── threejs-lighting/
-    │   └── SKILL.md
-    ├── threejs-interaction/
-    │   └── SKILL.md
-    └── ...
-```
-
-使用原则：
-
-- 需要实现地质层几何体时，优先参考 `threejs-geometry`。
-- 需要处理透明、半透明、颜色、材质、深度遮挡等问题时，优先参考 `threejs-materials`。
-- 需要调整场景光照、环境光、方向光时，可以参考 `threejs-lighting`。
-- 需要实现鼠标悬停、点击选中、图层高亮时，可以参考 `threejs-interaction`。
-- skills 只作为实现参考，不应改变项目架构。
-- 不要因为 skill 示例使用原生 Three.js，就直接把项目改成原生 Three.js。
-- 不要复制不适合本项目结构的大段示例代码。
-- 使用 skill 后，应将实现改写为符合 React、JSX、R3F 的组件化代码。
-
----
-
-## 当前数据来源
-
-当前地质层数据来自：
-
-```text
-public/data/geology-layers.json
-```
-
-开发时应继续使用该静态 JSON 文件作为数据来源。
-
-除非任务明确要求，不要：
-
-- 新增数据库。
-- 新增后端接口。
-- 新增真实传感器数据接入。
-- 新增 WebSocket。
-- 新增 Kafka / Flink / MQTT 等实时数据组件。
-- 新增机器学习预测结果接入。
-
-可以：
-
-- 扩展 `geology-layers.json` 的 mock 数据字段。
-- 新增用于前端演示的 mock JSON 文件。
-- 在前端代码中封装数据加载函数。
-- 为后续 API 对接预留简单的数据适配层。
-
----
-
-## 地质层数据设计原则
-
-地质层 mock 数据应尽量保持清晰、稳定、易扩展。
-
-推荐字段包括：
-
-```json
-{
-  "id": "layer-001",
-  "name": "第四系松散层",
-  "type": "soil",
-  "color": "#caa66a",
-  "opacity": 0.45,
-  "height": 0.6,
-  "depth": 0,
-  "visible": true,
-  "description": "用于演示的浅部覆盖层"
-}
-```
-
-字段含义：
-
-| 字段 | 含义 | 要求 |
-|---|---|---|
-| `id` | 图层唯一标识 | 必须稳定，不要使用随机值 |
-| `name` | 图层显示名称 | 用于 UI 展示 |
-| `type` | 地层类型 | 可用于分类和样式控制 |
-| `color` | 图层颜色 | 建议使用十六进制颜色 |
-| `opacity` | 透明度 | 建议范围 0.2 - 0.8 |
-| `height` | 图层厚度 | 用于三维几何体高度 |
-| `depth` | 图层深度或垂直偏移 | 用于控制层位 |
-| `visible` | 是否显示 | 用于图层开关 |
-| `description` | 描述信息 | 用于详情面板或悬浮提示 |
-
-注意：
-
-- 不要在前端写死所有地质层。
-- 地质层应尽量由 JSON 数据驱动生成。
-- 如果需要新增煤层、断层、钻孔等 mock 数据，应优先新建独立 JSON 文件或扩展清晰的数据结构。
-- 不要把真实业务数据库字段直接硬编码到组件内部。
-
----
-
-## 三维地质层实现要求
-
-地质层显示应满足以下要求：
-
-- 支持多个地质层上下叠加。
-- 每个图层应有独立颜色。
-- 每个图层应支持半透明显示。
-- 每个图层应能通过数据控制可见性。
-- 图层之间应有清晰的空间层次。
-- 视觉上应尽量避免严重的闪烁、穿插和深度冲突。
-- 场景应适合从不同角度观察。
-
-材质建议：
-
-- 使用支持透明的材质，例如 `meshStandardMaterial` 或 `meshPhysicalMaterial`。
-- 设置 `transparent={true}`。
-- 使用合理的 `opacity`。
-- 必要时可设置 `depthWrite={false}` 减少透明物体遮挡异常。
-- 必要时可设置 `side={THREE.DoubleSide}` 显示双面。
-- 不要为了透明效果引入复杂后处理，除非任务明确要求。
-
-几何体建议：
-
-- 当前阶段可以使用规则几何体表达地层，例如 box、extruded shape 或自定义 BufferGeometry。
-- 不要求实现真实地质建模算法。
-- 不要求实现真实 GIS / BIM / 矿山坐标系。
-- 不要求实现复杂剖面生成算法。
-- 如果要实现起伏地层，应先使用 mock 高程点或简单曲面，不要引入重型地理引擎。
-
----
-
-## 组件拆分建议
-
-如果当前项目仍然集中在 `App.jsx` 或 `App.js` 中，应逐步拆分组件。
-
-推荐结构：
+当前核心结构：
 
 ```text
 src/
 ├── App.jsx
 ├── main.jsx
+├── router.jsx
+├── api/
 ├── components/
-│   ├── SceneCanvas.jsx
-│   ├── GeologyScene.jsx
-│   ├── GeologyLayer.jsx
-│   ├── LayerList.jsx
-│   ├── LayerLegend.jsx
-│   ├── LayerInfoPanel.jsx
-│   └── LoadingState.jsx
+│   ├── gas/
+│   ├── geo3d/
+│   ├── geology/
+│   ├── hydrology/
+│   ├── layers/
+│   ├── mining/
+│   ├── panels/
+│   ├── risk/
+│   ├── scene/
+│   └── warning/
+├── config/
+├── data/
 ├── hooks/
-│   └── useGeologyLayers.js
+│   └── geoData/
+├── mock/
+├── mocks/
+├── pages/
+├── services/
+├── store/
 ├── utils/
-│   ├── layerGeometry.js
-│   └── layerMaterial.js
-├── styles/
-│   └── app.css
-└── assets/
+├── index.css
+└── App.css
+
+public/
+└── data/
+    └── geology-layers.json
 ```
 
-组件职责建议：
+职责约定：
 
-| 文件 | 职责 |
-|---|---|
-| `App.jsx` | 页面入口，组织整体布局 |
-| `SceneCanvas.jsx` | 负责 `<Canvas>`、相机、控制器、基础灯光 |
-| `GeologyScene.jsx` | 负责加载和渲染地质层集合 |
-| `GeologyLayer.jsx` | 负责单个地质层 mesh 的渲染和交互 |
-| `LayerList.jsx` | 负责图层列表和显示开关 |
-| `LayerLegend.jsx` | 负责颜色图例 |
-| `LayerInfoPanel.jsx` | 负责展示当前选中图层信息 |
-| `useGeologyLayers.js` | 负责加载和管理地质层数据 |
-| `layerGeometry.js` | 负责几何体数据生成或转换 |
-| `layerMaterial.js` | 负责材质参数整理 |
+- `src/App.jsx` 只渲染 `RouterProvider`。
+- `src/router.jsx` 维护 TanStack Router code-based 路由。
+- `src/pages/GeoModelPage.jsx` 负责组织主页面、面板、场景和 hooks。
+- `src/components/geo3d/GeoScene.jsx` 负责 `<Canvas>`、灯光、控制器和三维图层组合。
+- `src/components/geo3d/GeoLayerModel.jsx` 负责旧版地质分层模型。
+- `src/components/geology/` 放地质对象组件。
+- `src/components/mining/` 放巷道、工作面、推进相关组件。
+- `src/components/hydrology/` 放水文对象组件。
+- `src/components/gas/` 放瓦斯对象组件。
+- `src/components/warning/` 放预警、风险范围、治理点等场景组件。
+- `src/components/panels/` 放页面信息面板。
+- `src/hooks/useGeoData.js` 和 `src/hooks/geoData/` 负责加载各类地质 / 生产 / 风险数据。
+- `src/store/` 放 Zustand store，管理图层、选择态、场景状态等跨组件状态。
+- `src/api/` 放 API 适配函数，不在组件里直接拼复杂请求。
+- `src/mock/` 放静态 mock 数据模块。
+- `src/mocks/` 放 MSW handlers 和 browser worker。
+- `public/data/geology-layers.json` 保留旧版地层分层数据。
 
-拆分原则：
+不要为了一个小功能搬迁目录或大规模改名。新增模块时先对齐现有目录习惯。
 
-- 不要一次性过度工程化。
-- 优先把明显重复或过长的代码拆出来。
-- 每个组件应有清晰职责。
-- 不要引入复杂全局状态管理。
-- 状态可以先使用 `useState`、`useMemo`、`useEffect`。
-- 父子组件通信优先使用 props。
+## 路由规则
 
----
+项目使用 `@tanstack/react-router` 的 code-based route 配置。
 
-## UI 和交互要求
+当前路由：
 
-当前阶段 UI 应服务于三维地质层可视化，不要做成完整后台管理系统。
+| 路径 | 页面组件 | 说明 |
+|---|---|---|
+| `/` | `GeoModelPage` | 三维地质主页面 |
+| `/geo-model` | `GeoModelPage` | 三维地质主页面别名 |
 
-允许实现：
+规则：
 
-- 图层列表。
-- 图层显示 / 隐藏开关。
-- 图层颜色图例。
-- 鼠标悬停高亮。
-- 点击选中图层。
-- 当前图层信息面板。
-- 重置视角按钮。
-- 简单场景说明。
-- 简单加载状态和错误提示。
+- 新增页面先在 `src/pages/` 创建页面组件，再在 `src/router.jsx` 中扩展 route tree。
+- `App.jsx` 不承载三维业务逻辑。
+- 不要引入 `react-router-dom`。
+- 当前未使用 TanStack 文件路由，不要无故加入 `@tanstack/router-plugin`。
 
-不建议当前阶段实现：
+## React Three Fiber 规则
 
-- 用户登录。
-- 权限管理。
-- 菜单权限配置。
-- 数据库管理页面。
-- 复杂后台管理 CRUD。
-- 真实预警处置流程。
-- 大屏驾驶舱完整系统。
-- 复杂报表系统。
-- 历史数据查询系统。
-
-交互实现建议：
-
-- 悬停图层时可以提高亮度或透明度。
-- 点击图层后，在信息面板展示名称、类型、深度、厚度、描述。
-- 图层开关应只影响当前前端显示状态，不要写入数据库。
-- 图层状态可以临时存储在 React state 中。
-- 不需要引入 Redux、Zustand 等状态库，除非功能明显复杂化。
-
----
-
-## 代码风格要求
-
-本项目使用 JavaScript / JSX。
-
-基本要求：
-
-- 保持代码清晰、直观。
-- 使用函数组件。
-- 使用 React Hooks。
-- 命名应表达业务含义。
-- 不要写无意义的缩写变量名。
-- 不要把大型逻辑全部堆在 `App.jsx` 中。
-- 不要引入 TypeScript 类型声明。
-- 不要引入未使用的依赖。
-- 删除无用代码、无用 import 和调试输出。
-- 保持 ESLint / Vite 构建通过。
-
-命名建议：
-
-| 类型 | 命名示例 |
-|---|---|
-| 组件 | `GeologyLayer`、`LayerInfoPanel` |
-| hooks | `useGeologyLayers` |
-| 工具函数 | `createLayerGeometry`、`normalizeLayerData` |
-| 状态变量 | `selectedLayerId`、`visibleLayerIds` |
-| 事件函数 | `handleLayerClick`、`handleToggleLayer` |
-
----
-
-## 样式要求
-
-当前项目可以继续使用普通 CSS。
+本项目必须保持 R3F 写法。
 
 允许：
 
-- 使用 CSS 文件。
-- 使用 CSS modules，前提是项目已有相关习惯。
-- 使用简单响应式布局。
-- 使用简洁的面板、按钮、图例样式。
+- 使用 `<Canvas>` 创建三维场景。
+- 使用 R3F 组件组织 mesh、material、light、controls 和 helper。
+- 使用 `useFrame` 处理必要动画。
+- 使用 R3F 指针事件处理 hover、click、select。
+- 使用 Three.js 的 `BufferGeometry`、材质、颜色、向量、几何工具等底层能力。
+- 使用 `@react-three/drei` 的轻量组件，例如 `OrbitControls`、`Html`、`GizmoHelper`。
 
-不建议：
+不允许，除非任务明确要求：
 
-- 为了简单功能引入大型 UI 组件库。
-- 为了少量样式引入 Tailwind CSS，除非任务明确要求。
-- 为了演示效果引入复杂动画库。
-- 写大量难维护的全局 CSS。
-- 使用过度炫酷但影响可读性的样式。
+- 手动创建主 `new THREE.Scene()`。
+- 手动创建主 `new THREE.WebGLRenderer()`。
+- 手写独立的主 `requestAnimationFrame` 渲染循环替代 R3F。
+- 绕过 R3F 组件体系重写整套三维场景。
+- 在 React 生命周期外长期直接操作 canvas DOM。
 
-视觉方向：
+如果参考原生 Three.js 示例，必须改写成 R3F 组件形式。
 
-- 页面应突出三维场景。
-- 控制面板应简洁。
-- 图层颜色应与三维对象保持一致。
-- 半透明图层之间应有明显区分。
-- 信息面板不应遮挡主要观察区域。
+## 三维对象实现规则
 
----
+实现或修改三维对象时：
+
+- 数据优先来自 `src/mock/`、`src/api/`、`src/hooks/geoData/` 或 `public/data/`。
+- 组件接收 `items`、`opacity`、选中态和回调等 props，避免直接读取无关全局状态。
+- 固定 geometry、material 参数应使用 `useMemo` 或拆分小组件，避免每帧重复创建大量对象。
+- 透明对象应合理设置 `transparent`、`opacity`、`depthWrite`、`side`、`renderOrder`，减少深度冲突。
+- 交互优先使用 `onPointerOver`、`onPointerOut`、`onClick`，点击事件需要时调用 `stopPropagation()`。
+- 高亮、预警光圈、距离线等效果应保持克制，不能遮挡主要地质对象。
+- 不要求真实 GIS / BIM / 矿山坐标系统，不要声称 mock 几何等同真实建模成果。
+
+透明材质常用原则：
+
+- 半透明体优先使用 `meshStandardMaterial` 或 `meshBasicMaterial`。
+- 多层透明叠加出现排序问题时，先调整透明度、`depthWrite={false}`、空间间距或 `renderOrder`。
+- 不要为了透明排序问题重写渲染器或引入复杂后处理。
+
+## 数据和 Mock/API 边界
+
+当前项目支持两类数据来源：
+
+- `src/mock/`：模块化静态 mock 数据。
+- `public/data/geology-layers.json`：旧版地质分层 JSON。
+- `src/api/` + `src/mocks/handlers.js`：API 适配与 MSW mock endpoint。
+
+环境变量：
+
+```text
+VITE_ENABLE_MOCK=true|false
+VITE_API_BASE_URL=/api
+```
+
+开发环境默认 `.env.development` 启用 MSW mock。生产环境 `.env.production` 默认关闭 mock，并指向 `http://127.0.0.1:8080`。
+
+规则：
+
+- 组件不要直接依赖 `src/mock/`，优先通过 `src/api/` 或 hooks 获取数据。
+- 新增 mock 数据优先放在 `src/mock/`，并通过 `src/mock/index.js` 汇总。
+- 新增 API mock endpoint 时同步更新 `src/mocks/handlers.js`。
+- 新增数据加载逻辑优先放入 `src/hooks/geoData/` 对应分类 loader。
+- `public/data/geology-layers.json` 主要服务旧版地层分层模型，不要随意改字段语义。
+- 没有真实接口文档时，可以预留 API 适配函数，但不要编造真实后端能力。
+- 真实接口字段与 mock 字段不一致时，应在 API 适配层或 loader 中归一化，避免污染场景组件。
+
+错误处理：
+
+- 数据加载失败不能导致白屏。
+- 关键数据失败可显示清晰错误；非关键数据失败应回退为空数组或默认值。
+- console 中可记录必要错误，但 UI 不展示大段技术栈错误。
+
+## 状态管理
+
+项目已经使用 Zustand，主要 store 位于 `src/store/`。
+
+规则：
+
+- 跨面板、跨场景共享状态可以进入 Zustand。
+- 组件局部 hover、临时展开、局部输入等状态保持在组件内。
+- 不要为了简单交互新增全局状态。
+- 修改 store 时保持 action 命名清晰，例如 `toggleLayer`、`setLayerOpacity`、`clearSelection`。
+- 不要把 fetch 副作用散落到多个组件里；已有 store 或 hook 能承载时优先复用。
+
+## 图层系统
+
+图层配置来自 `fetchLayerConfig()`，开发 mock 来自 `src/mock/layers.js`。
+
+新增图层时通常需要同步：
+
+- `src/mock/layers.js` 中的分组和 layer definition。
+- 对应 mock 数据文件与 `src/mock/index.js` 导出。
+- `src/api/` 中的 fetch 函数。
+- `src/mocks/handlers.js` 中的 mock endpoint。
+- `src/hooks/geoData/` 中对应 loader。
+- `src/components/geo3d/GeoScene.jsx` 中的渲染入口。
+- 需要时补充 `src/components/panels/` 的信息展示。
+
+图层显隐和透明度应继续由 `useLayerStore` 控制，不要在多个组件中维护互相冲突的图层开关。
+
+## 业务功能边界
+
+允许做：
+
+- 前端三维可视化。
+- mock 数据展示。
+- mock API 结构。
+- 简单 API 适配层。
+- 图层控制、信息面板、选择、高亮、距离线。
+- 工作面推进的前端演示。
+- 基于 mock 数据的风险和预警提示展示。
+
+不要默认做：
+
+- 用户登录、权限、组织架构。
+- 后端服务、数据库、真实接口联调。
+- 真实传感器接入、WebSocket、MQTT、Kafka、Flink。
+- 真实瓦斯、水害、压力预测模型。
+- 真实预警规则引擎和处置闭环。
+- 完整后台管理系统或大屏驾驶舱重构。
+- 真实 GIS / BIM / CAD 数据解析。
+
+如果用户要求“接入原系统”，必须先明确接口、认证、数据库、部署和数据权限。只有截图或口头描述时，只能做前端原型或 mock 适配，不能声称已完成真实兼容。
+
+## 样式和 UI
+
+当前项目使用 Tailwind CSS 4 与普通 CSS。
+
+规则：
+
+- 页面重点是三维场景，控制面板服务于观察和筛选。
+- 面板应简洁、可读，不遮挡主要观察区域。
+- 图层颜色与三维对象保持一致。
+- 新样式优先使用现有 Tailwind 写法和 `index.css` 基础样式。
+- 不要为了少量 UI 引入大型组件库。
+- 不要做营销落地页式布局。
+- 不要堆叠无意义装饰、强烈动画或影响识别的视觉效果。
+- 移动端和窄屏下不能出现明显文字重叠、按钮溢出或面板不可关闭问题。
+
+`src/App.css` 中仍有模板遗留样式。不要在无关任务中大规模格式化或清理；如确实确认未使用，可以单独小步删除。
 
 ## 性能要求
 
-当前项目是前端原型，不需要过早优化。
+这是前端原型，不需要过度优化，但要避免明显问题：
 
-但应避免明显性能问题：
+- 不要在 `useFrame` 中做复杂数据处理。
+- 不要每帧创建 geometry、material、大数组或临时对象。
+- 对固定几何、边界、颜色转换使用 `useMemo`。
+- 大量 mesh 增加前先评估是否可合并、简化或实例化。
+- 不要反复 fetch 同一份静态数据。
+- 不要为了少量 mock 数据加入复杂缓存系统。
 
-- 不要在每一帧重复创建大量 geometry、material、array 或 object。
-- 对固定数据可使用 `useMemo`。
-- 不要在 `useFrame` 中执行复杂数据处理。
-- 不要在渲染时反复 fetch 同一份 JSON。
-- 不要为少量 mock 数据引入复杂缓存系统。
-- 不要引入不必要的大型依赖。
+## Codex Skills 使用
 
-透明材质注意：
+本项目可参考本地 Three.js skills，但只作为实现参考：
 
-- 多个透明 mesh 叠加时可能出现渲染顺序问题。
-- 可以通过合理的 `renderOrder`、`depthWrite`、透明度和几何间距减少问题。
-- 不要为了透明排序问题重写渲染器。
+- `threejs-geometry`：几何体、BufferGeometry、自定义形状。
+- `threejs-materials`：透明、半透明、PBR、材质参数。
+- `threejs-lighting`：灯光、阴影、环境光。
+- `threejs-interaction`：raycasting、指针事件、选中交互。
+- `threejs-animation`：必要的 R3F 动画或混合动画。
 
----
+使用要求：
 
-## 后续功能边界
+- skill 示例如果是原生 Three.js，必须转换成 R3F。
+- 不要复制不适合本项目结构的大段示例。
+- 不要因为 skill 改变项目架构或技术路线。
 
-本仓库后续可能增加以下前端演示能力，但仍应保持 mock 数据优先：
+## 代码风格
 
-### 1. 煤层可视化
-
-允许：
-
-- 用不同颜色突出煤层。
-- 在图层列表中标记煤层。
-- 点击煤层显示厚度、埋深、名称等信息。
-
-不应直接实现：
-
-- 煤层真实建模算法。
-- 煤矿生产系统数据库对接。
-- 采掘计划自动生成。
-
-### 2. 断层可视化
-
-允许：
-
-- 使用简单平面、折线或半透明面表示断层。
-- 使用 mock 数据表示断层名称、倾角、落差。
-- 在三维场景中叠加断层对象。
-
-不应直接实现：
-
-- 复杂地质解释算法。
-- 真实三维断层重建。
-
-### 3. 巷道 / 隧道可视化
-
-允许：
-
-- 使用线段、管道或简单几何体表示巷道。
-- 使用 mock 数据展示巷道名称、类型、长度。
-
-不应直接实现：
-
-- 真实巷道 CAD 数据解析。
-- 复杂矿图系统。
-
-### 4. 钻孔可视化
-
-允许：
-
-- 使用竖直线、圆柱或点位表示钻孔。
-- 显示钻孔编号、深度、取样信息。
-
-不应直接实现：
-
-- 真实钻孔数据库。
-- 专业钻孔解释模型。
-
-### 5. 传感器点位可视化
-
-允许：
-
-- 用点、图标或小球表示传感器。
-- 使用 mock 数据显示传感器类型、位置、状态。
-- 简单使用颜色表示正常、异常、离线。
-
-不应直接实现：
-
-- MQTT 接入。
-- WebSocket 实时推送。
-- Kafka / Flink 数据流。
-- 真实预警算法。
-
-### 6. 预警叠加显示
-
-允许：
-
-- 使用 mock 数据展示瓦斯、水害、压力等预警点位。
-- 用颜色、闪烁、标记表达预警等级。
-- 点击预警点显示事件说明。
-
-不应直接实现：
-
-- 真实预警规则引擎。
-- 机器学习预测模型。
-- 自动处置流程。
-- 短信、电话、广播等通知系统。
-
----
-
-## 与原系统对接的边界
-
-本项目当前不负责直接对接原煤矿管理系统。
-
-如果后续任务要求与原系统对接，应先明确：
-
-- 原系统是否提供 API。
-- 是否可访问原数据库。
-- 是否有数据库表结构。
-- 是否有接口文档。
-- 是否有统一认证方式。
-- 是否允许 iframe 嵌入。
-- 是否需要单点登录。
-- 是否只需要页面级跳转。
-- 是否只需要静态演示。
-
-在没有源码、没有接口、没有数据库权限、只有截图的情况下：
-
-- 可以做前端原型。
-- 可以做独立子系统。
-- 可以做 mock 数据演示。
-- 可以预留接口适配层。
-- 不能声称已经完成真实兼容。
-- 不能直接保证系统升级后完全兼容。
-- 不要编造原系统 API、数据库表或字段。
-
----
-
-## 开发流程建议
-
-Codex 或其他 AI Agent 修改本仓库时，应遵循以下流程：
-
-1. 先阅读 `AGENTS.md`。
-2. 查看 `package.json`，确认技术栈和已有脚本。
-3. 查看 `src/` 目录，理解当前组件结构。
-4. 查看 `public/data/geology-layers.json`，理解数据结构。
-5. 在不改变技术路线的前提下完成任务。
-6. 优先小步修改，避免一次性大规模重构。
-7. 修改后运行构建或检查命令。
-8. 总结修改内容、影响文件和验证结果。
-
-如果任务不明确，应根据当前项目定位做最小合理实现，不要主动扩展成完整系统。
-
----
+- 使用 JavaScript / JSX。
+- 使用函数组件和 React Hooks。
+- 命名表达业务含义，不使用无意义缩写。
+- import 保持简洁，删除无用 import 和调试输出。
+- 不要把大型逻辑继续堆到 `GeoModelPage.jsx` 或 `GeoScene.jsx`；新增复杂对象时优先拆成组件或工具函数。
+- 工具函数放入 `src/utils/`，API 函数放入 `src/api/`，数据加载放入 `src/hooks/geoData/`。
+- 小范围修改，不格式化整个项目造成无关 diff。
+- 保持 ESLint / Vite build 通过。
 
 ## 常用命令
 
-根据项目实际情况优先查看 `package.json`。
-
-常见命令可能包括：
+优先使用 Bun：
 
 ```bash
 bun install
 bun run dev
 bun run build
+bun run lint
 bun run preview
 ```
 
-注意：
+验证时根据改动选择：
 
-- 不要擅自删除 `bun.lock`。
-- 不要擅自切换到 npm、yarn 或 pnpm。
-- 不要在没有必要的情况下新增依赖。
-- 如果新增依赖，必须说明原因。
-- 如果构建失败，应优先修复代码问题，而不是绕过构建。
+- 文档或注释改动：通常不需要构建，但可以检查文件内容。
+- JS/JSX/CSS 改动：至少运行 `bun run build`。
+- 触及 lint 规则、hooks、复杂组件时运行 `bun run lint`。
+- 前端视觉改动应启动 dev server 并在浏览器检查主要视图。
 
----
+## 开发流程
 
-## 测试和验证要求
+Agent 修改本仓库时应：
 
-当前项目主要是前端可视化原型。
-
-每次修改后至少应检查：
-
-- 项目是否能正常启动。
-- 页面是否能正常显示。
-- 三维场景是否能正常渲染。
-- 地质层数据是否能正常加载。
-- 图层透明显示是否正常。
-- 控制器是否还能旋转、缩放、平移。
-- 构建是否通过。
-
-如果项目已有 lint 或 test 脚本，也应运行：
-
-```bash
-bun run lint
-bun run test
-```
-
-如果没有对应脚本，不要为了完成当前任务强行引入测试框架。
-
----
-
-## 允许的典型任务
-
-以下任务符合当前项目阶段：
-
-- 将 `App.jsx` 中的三维场景拆分为组件。
-- 从 JSON 加载地质层数据。
-- 根据 JSON 数据动态渲染多个地质层。
-- 为地质层添加半透明材质。
-- 为图层添加颜色图例。
-- 添加图层显示 / 隐藏开关。
-- 添加鼠标悬停高亮。
-- 添加点击选中图层。
-- 添加图层信息面板。
-- 调整相机初始位置。
-- 添加基础灯光。
-- 优化组件结构。
-- 优化 CSS 布局。
-- 修复透明材质显示问题。
-- 修复数据加载错误。
-- 添加 mock 断层、钻孔、传感器点位的前端展示。
-
----
-
-## 不允许的典型任务
-
-除非用户明确要求，否则不要做以下事情：
-
-- 新建 Express、NestJS、Go、Java 后端。
-- 新建数据库。
-- 连接 SQL Server。
-- 连接真实煤矿系统。
-- 接入真实传感器。
-- 接入 MQTT、Kafka、Flink。
-- 实现机器学习模型。
-- 实现真实预警算法。
-- 实现用户登录和权限系统。
-- 实现完整后台管理系统。
-- 把项目迁移为 TypeScript。
-- 把项目迁移为 Cesium、Babylon.js、Unity 或 Unreal。
-- 用原生 Three.js 重写 R3F 项目。
-- 引入大型 UI 框架。
-- 引入复杂状态管理库。
-- 编造真实业务数据、接口或数据库字段。
-
----
-
-## 错误处理要求
-
-数据加载失败时，应提供清晰的前端提示。
-
-允许：
-
-- 显示 “地质层数据加载失败”。
-- 在控制台输出必要错误。
-- 给出默认空状态。
-- 保持页面主体不崩溃。
-
-不建议：
-
-- 白屏。
-- 抛出未捕获异常。
-- 因单个图层数据异常导致整个场景不可用。
-- 在 UI 中显示过多技术栈错误信息。
-
-数据处理时应考虑：
-
-- 字段缺失。
-- 颜色格式异常。
-- 透明度为空。
-- 高度或深度为空。
-- 图层数组为空。
-- JSON 加载失败。
-
----
-
-## Mock 数据要求
-
-Mock 数据应服务于演示和开发。
-
-要求：
-
-- 数据结构清晰。
-- 字段命名稳定。
-- 不要频繁变更字段语义。
-- 不要使用真实敏感生产数据。
-- 不要使用无法解释的随机字段。
-- 不要把 mock 数据写死在多个组件中。
-- 不要为了演示效果伪造“真实预测结果”。
-
-推荐：
-
-- 将 mock 数据集中放在 `public/data/`。
-- 使用语义明确的文件名。
-- 使用清晰的 id。
-- 在组件中通过统一 loader 或 hook 获取数据。
-- 后续如果要接 API，可以替换数据加载层，而不是重写所有组件。
-
----
-
-## 透明地质系统相关说明
-
-本项目可作为透明地质系统的三维可视化基础，但当前不等同于完整透明地质系统。
-
-完整透明地质系统通常还需要：
-
-- 地质数据采集。
-- 地质数据库。
-- 三维地质建模。
-- 地质解释。
-- 巷道、工作面、钻孔等对象管理。
-- 生产系统集成。
-- 传感器系统集成。
-- 动态更新和预警联动。
-- 多用户权限管理。
-- 工程应用流程。
-
-当前仓库只承担其中的：
-
-> 前端三维地质层可视化原型。
-
-因此，开发时不要把本项目过度扩展成完整业务系统。
-
----
-
-## 煤矿安全预警相关说明
-
-本项目后续可能服务于煤矿安全预警场景，但当前不实现真实预警。
-
-当前允许做：
-
-- 预警点位 mock 展示。
-- 预警等级颜色标记。
-- 预警信息面板。
-- 预警事件静态列表。
-- 三维场景中的预警位置叠加。
-
-当前不做：
-
-- 真实瓦斯预测。
-- 真实水害预测。
-- 真实冲击地压预测。
-- 传感器实时数据接入。
-- 预警规则引擎。
-- 模型训练。
-- 模型推理。
-- 告警通知闭环。
-
-如果用户要求实现预警相关功能，应优先判断是：
-
-1. 前端 mock 展示；
-2. API 对接；
-3. 真实实时预警系统。
-
-没有明确说明时，默认只做前端 mock 展示。
-
----
+1. 阅读本 `AGENTS.md`。
+2. 查看 `package.json`，确认脚本和依赖。
+3. 查看相关 `src/` 文件，理解现有组件、store、API 和 mock 数据。
+4. 明确任务属于前端展示、API 适配、mock 数据扩展还是越界的真实系统能力。
+5. 小步修改直接相关文件。
+6. 保持 R3F、TanStack Router、Zustand、MSW 的既有模式。
+7. 修改后运行合适验证命令。
+8. 回复时说明改动文件、实现内容、验证结果和未完成事项。
 
 ## 文件修改原则
 
-修改代码时应遵守：
-
-- 优先修改与任务直接相关的文件。
 - 不要无关重构。
-- 不要格式化整个项目导致大量无关 diff。
-- 不要删除已有功能。
-- 不要破坏现有数据结构。
-- 不要移动文件，除非确实有必要。
-- 不要引入与当前任务无关的新目录。
-- 保持提交结果容易审查。
-
-如果需要重构：
-
-- 应先保证功能不变。
-- 再进行组件拆分。
-- 最后再新增功能。
-- 不要在一次修改中同时做大规模重构和复杂新功能。
-
----
-
-## 依赖管理原则
-
-新增依赖前应先判断是否必要。
-
-优先使用已有依赖：
-
-- React
-- Vite
-- Three.js
-- `@react-three/fiber`
-- `@react-three/drei`
-
-可以谨慎新增：
-
-- 与 Three.js 可视化直接相关的轻量工具。
-- 明确用于当前功能的小型工具库。
-
-不建议新增：
-
-- 大型 UI 框架。
-- 大型状态管理库。
-- 大型地理信息引擎。
-- 后端框架。
-- 数据库驱动。
-- 实时通信组件。
-- 机器学习库。
-
-新增依赖必须满足：
-
-- 当前任务确实需要。
-- 不能用已有技术合理完成。
-- 不明显增加项目复杂度。
-- 不改变项目定位。
-
----
+- 不要移动文件，除非确有必要。
+- 不要删除用户已有改动。
+- 不要破坏 mock 数据字段语义。
+- 不要改包管理器或删除 lockfile。
+- 新增依赖前必须判断是否真的必要，并说明原因。
+- 如果遇到脏工作区，先识别相关与无关改动；不要回滚他人改动。
 
 ## 提交说明建议
 
-如果需要生成提交说明，建议使用清晰的中文或英文短句。
-
-示例：
+如果需要生成提交说明，使用清晰短句：
 
 ```text
-feat: add translucent geology layer rendering
+docs: rewrite agent instructions for current geo demo
+feat: add hydrology layer controls
+fix: handle missing warning mock data
+refactor: split risk highlight helpers
 ```
 
-```text
-feat: add layer visibility controls
-```
-
-```text
-refactor: split geology scene components
-```
-
-```text
-fix: handle geology layer data loading error
-```
-
-不要使用含糊说明，例如：
+避免：
 
 ```text
 update
@@ -897,39 +380,15 @@ fix bug
 change files
 ```
 
----
+## 完成回复要求
 
-## Agent 回复要求
+完成任务后简要说明：
 
-当 Codex 或 AI Agent 完成任务后，应简要说明：
+- 修改了哪些文件。
+- 实现或调整了什么。
+- 运行了哪些验证命令。
+- 是否有未完成事项或需要用户确认的边界。
 
-1. 修改了哪些文件。
-2. 实现了什么功能。
-3. 是否运行了验证命令。
-4. 是否存在未完成或需要用户确认的内容。
+本项目的长期目标是：
 
-示例：
-
-```text
-已完成：
-
-- 拆分了 GeologyScene 和 GeologyLayer 组件。
-- 从 public/data/geology-layers.json 加载图层数据。
-- 为每个地质层添加半透明材质。
-- 添加了图层显示/隐藏控制。
-
-验证：
-
-- 已运行 bun run build，构建通过。
-```
-
-如果没有运行验证命令，应明确说明原因。
-
-    
-## 最终目标提醒
-
-本仓库当前最重要的目标不是做“大而全”的系统，而是：
-
-> 用 React Three Fiber 做出一个清晰、稳定、可扩展的三维地质层可视化前端原型。
-
-所有新增功能都应围绕这个目标展开。
+> 在不膨胀为完整业务系统的前提下，用 React Three Fiber 做出清晰、稳定、可扩展的三维地质与矿山风险可视化前端原型。
