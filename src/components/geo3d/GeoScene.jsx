@@ -1,11 +1,6 @@
-import * as THREE from "three";
 import { Canvas } from "@react-three/fiber";
-import {
-  GizmoHelper,
-  GizmoViewport,
-  OrbitControls,
-} from "@react-three/drei";
-import GeoLayerModel from "./GeoLayerModel";
+import LegacyStrataModelGroup from "./LegacyStrataModelGroup";
+import SceneEnvironment from "./SceneEnvironment";
 import BoreholeLayer from "../geology/BoreholeLayer";
 import CoalSeamLayer from "../geology/CoalSeamLayer";
 import CollapseColumnLayer from "../geology/CollapseColumnLayer";
@@ -16,7 +11,6 @@ import AquiferLayer from "../hydrology/AquiferLayer";
 import GoafWaterLayer from "../hydrology/GoafWaterLayer";
 import WaterInrushPointLayer from "../hydrology/WaterInrushPointLayer";
 import WaterRichLayer from "../hydrology/WaterRichLayer";
-import DistanceLine from "../mining/DistanceLine";
 import MiningPathLayer from "../mining/MiningPathLayer";
 import TunnelLayer from "../mining/TunnelLayer";
 import WorkingFaceLayer from "../mining/WorkingFaceLayer";
@@ -28,88 +22,16 @@ import RiskRangeLayer from "../warning/RiskRangeLayer";
 import WarningPointLayer from "../warning/WarningPointLayer";
 import { useLayerStore } from "../../store/layerStore";
 import { useSelectionStore } from "../../store/selectionStore";
-import { moveBoundary } from "../../utils/distance";
 import {
-  DEFAULT_HIGHLIGHT_COLOR,
-  clamp,
-  getBodyCenter,
   getDefaultWorkingFaceId,
-  getHighlightRadius,
   getRiskBodyWarning,
   getRiskColor,
   getRiskLevel,
-  getWarningKey,
   getWarningLevel,
   isRiskBodyLayerVisible,
-  shouldShowWarningDistanceLine,
 } from "../../utils/riskSceneUtils";
 import RiskHighlightOverlay from "./overlays/RiskHighlightOverlay";
-
-const DISABLE_RAYCAST = () => null;
-
-function buildMovedWorkingFace(workingFace, advanceDistance) {
-  if (!workingFace) {
-    return null;
-  }
-
-  const canMove =
-    Array.isArray(workingFace.boundary) &&
-    workingFace.boundary.length > 0 &&
-    Array.isArray(workingFace.advanceDirection);
-
-  return {
-    ...workingFace,
-    boundary: canMove
-      ? moveBoundary(
-          workingFace.boundary,
-          workingFace.advanceDirection,
-          advanceDistance
-        )
-      : workingFace.boundary,
-  };
-}
-
-function WarningMarker({ body, color = DEFAULT_HIGHLIGHT_COLOR }) {
-  const center = getBodyCenter(body);
-  const radius = clamp(getHighlightRadius(body) * 0.32, 6, 12);
-  const markerOffset = radius + 16;
-
-  return (
-    <group position={[center[0], center[1] + markerOffset, center[2]]}>
-      <mesh raycast={DISABLE_RAYCAST}>
-        <sphereGeometry args={[radius, 18, 18]} />
-        <meshBasicMaterial
-          color={color}
-          transparent
-          opacity={0.92}
-          depthWrite={false}
-        />
-      </mesh>
-      <mesh raycast={DISABLE_RAYCAST} rotation={[-Math.PI / 2, 0, 0]}>
-        <ringGeometry args={[radius * 1.24, radius * 1.74, 32]} />
-        <meshBasicMaterial
-          color={color}
-          transparent
-          opacity={0.85}
-          side={THREE.DoubleSide}
-          depthWrite={false}
-        />
-      </mesh>
-      <mesh
-        raycast={DISABLE_RAYCAST}
-        position={[0, -markerOffset * 0.45, 0]}
-      >
-        <cylinderGeometry args={[0.9, 0.9, markerOffset * 0.72, 8]} />
-        <meshBasicMaterial
-          color={color}
-          transparent
-          opacity={0.46}
-          depthWrite={false}
-        />
-      </mesh>
-    </group>
-  );
-}
+import WarningOverlay from "./overlays/WarningOverlay";
 
 export default function GeoScene({
   layerData,
@@ -196,21 +118,6 @@ export default function GeoScene({
   const advancingWorkingFaceId = hasSelectedWorkingFace
     ? selectedWorkingFaceId
     : getDefaultWorkingFaceId(workingFaces);
-  const distanceLineWarningKeys = new Set();
-  const hasFocusedRiskBody = Boolean(activeHighlightedRiskBodyId);
-  let distanceLineCount = 0;
-
-  generatedWarnings.forEach((warning, index) => {
-    if (
-      !shouldShowWarningDistanceLine(warning, activeHighlightedRiskBodyId) ||
-      (!hasFocusedRiskBody && distanceLineCount >= 3)
-    ) {
-      return;
-    }
-
-    distanceLineWarningKeys.add(getWarningKey(warning, index));
-    distanceLineCount += 1;
-  });
 
   return (
     <Canvas
@@ -221,18 +128,7 @@ export default function GeoScene({
         onClearSelection?.();
       }}
     >
-      <color attach="background" args={["#050910"]} />
-      <fog attach="fog" args={["#050910", 560, 1220]} />
-
-      <ambientLight intensity={0.74} />
-      <directionalLight position={[280, 420, 220]} intensity={2.2} />
-      <directionalLight position={[-280, 160, -220]} intensity={0.9} />
-      <pointLight position={[0, 120, 0]} intensity={0.62} color="#38bdf8" />
-
-      <gridHelper
-        args={[760, 24, "#1e8fa6", "#152737"]}
-        position={[0, -162, 0]}
-      />
+      <SceneEnvironment />
 
       <group rotation={[0, -0.24, 0]}>
         {layers.strata && (
@@ -245,18 +141,14 @@ export default function GeoScene({
               />
             ))}
 
-            {layerData.length > 0 && (
-              <group position={[0, 112, 0]} scale={[42, 32, 42]}>
-                <GeoLayerModel
-                  layerData={layerData}
-                  visibleLayerIds={visibleLayerIds}
-                  explode={explode}
-                  selectedLayerId={selectedLayerId}
-                  onSelectLayer={onSelectLayer}
-                  opacity={opacities.strata}
-                />
-              </group>
-            )}
+            <LegacyStrataModelGroup
+              layerData={layerData}
+              visibleLayerIds={visibleLayerIds}
+              explode={explode}
+              selectedLayerId={selectedLayerId}
+              onSelectLayer={onSelectLayer}
+              opacity={opacities.strata}
+            />
           </>
         )}
 
@@ -391,45 +283,15 @@ export default function GeoScene({
             />
           )}
 
-        {layers.warnings &&
-          generatedWarnings.map((warning, index) => {
-            const workingFace = workingFaces.find(
-              (face) => face.id === warning.workingFaceId
-            );
-            const riskBody = sceneRiskBodies.find(
-              (body) => body.id === warning.riskBodyId
-            );
-            const warningKey = getWarningKey(warning, index);
-
-            if (!workingFace || !riskBody) {
-              return null;
-            }
-
-            const warningColor = getRiskColor(riskBody, warning);
-            const showDistanceLine = distanceLineWarningKeys.has(warningKey);
-            const workingFaceAdvanceDistance =
-              workingFace.id === advancingWorkingFaceId
-                ? advanceDistance
-                : workingFace.currentAdvance;
-            const movedWorkingFace = buildMovedWorkingFace(
-              workingFace,
-              workingFaceAdvanceDistance
-            );
-
-            return (
-              <group key={warningKey}>
-                <WarningMarker body={riskBody} color={warningColor} />
-                {showDistanceLine && movedWorkingFace && (
-                  <DistanceLine
-                    from={movedWorkingFace}
-                    to={riskBody}
-                    color={warningColor}
-                    distance={warning.distance}
-                  />
-                )}
-              </group>
-            );
-          })}
+        <WarningOverlay
+          visible={layers.warnings}
+          generatedWarnings={generatedWarnings}
+          workingFaces={workingFaces}
+          riskBodies={sceneRiskBodies}
+          advanceDistance={advanceDistance}
+          advancingWorkingFaceId={advancingWorkingFaceId}
+          focusedRiskBodyId={activeHighlightedRiskBodyId}
+        />
 
         {highlightedRiskBody && (
           <RiskHighlightOverlay
@@ -440,22 +302,6 @@ export default function GeoScene({
           />
         )}
       </group>
-
-      <OrbitControls
-        makeDefault
-        enableDamping
-        dampingFactor={0.08}
-        target={[20, -28, -16]}
-        minDistance={130}
-        maxDistance={920}
-      />
-
-      <GizmoHelper alignment="bottom-left" margin={[70, 70]}>
-        <GizmoViewport
-          axisColors={["#e8593f", "#4caf50", "#3f51e8"]}
-          labelColor="white"
-        />
-      </GizmoHelper>
     </Canvas>
   );
 }
