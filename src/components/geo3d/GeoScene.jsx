@@ -3,11 +3,9 @@ import SceneEnvironment from "./SceneEnvironment";
 import GasLayerGroup from "./layerGroups/GasLayerGroup";
 import GeologyLayerGroup from "./layerGroups/GeologyLayerGroup";
 import HydrologyLayerGroup from "./layerGroups/HydrologyLayerGroup";
+import MiningLayerGroup from "./layerGroups/MiningLayerGroup";
 import BoreholeLayer from "../geology/BoreholeLayer";
 import HiddenHazardLayer from "../geology/HiddenHazardLayer";
-import MiningPathLayer from "../mining/MiningPathLayer";
-import TunnelLayer from "../mining/TunnelLayer";
-import WorkingFaceLayer from "../mining/WorkingFaceLayer";
 import MeasurePointLayer from "../warning/MeasurePointLayer";
 import RiskRangeLayer from "../warning/RiskRangeLayer";
 import WarningPointLayer from "../warning/WarningPointLayer";
@@ -146,23 +144,16 @@ export default function GeoScene({
           waterInrushPoints={waterInrushPoints}
         />
 
-        {layers.tunnels && (
-          <TunnelLayer items={tunnels} opacity={opacities.tunnels} />
-        )}
-
-        {layers.workingFaces && (
-          <WorkingFaceLayer
-            items={workingFaces}
-            advanceDistance={advanceDistance}
-            selectedWorkingFaceId={advancingWorkingFaceId}
-            opacity={opacities.workingFaces}
-            onSelectWorkingFace={onSelectWorkingFace}
-          />
-        )}
-
-        {layers.miningPaths && (
-          <MiningPathLayer items={miningPaths} opacity={opacities.miningPaths} />
-        )}
+        <MiningLayerGroup
+          layers={layers}
+          opacities={opacities}
+          workingFaces={workingFaces}
+          tunnels={tunnels}
+          miningPaths={miningPaths}
+          advanceDistance={advanceDistance}
+          advancingWorkingFaceId={advancingWorkingFaceId}
+          onSelectWorkingFace={onSelectWorkingFace}
+        />
 
         <GasLayerGroup
           layers={layers}
