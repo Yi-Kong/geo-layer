@@ -1,5 +1,6 @@
 import { Canvas } from "@react-three/fiber";
 import SceneEnvironment from "./SceneEnvironment";
+import GasLayerGroup from "./layerGroups/GasLayerGroup";
 import GeologyLayerGroup from "./layerGroups/GeologyLayerGroup";
 import HydrologyLayerGroup from "./layerGroups/HydrologyLayerGroup";
 import BoreholeLayer from "../geology/BoreholeLayer";
@@ -7,9 +8,6 @@ import HiddenHazardLayer from "../geology/HiddenHazardLayer";
 import MiningPathLayer from "../mining/MiningPathLayer";
 import TunnelLayer from "../mining/TunnelLayer";
 import WorkingFaceLayer from "../mining/WorkingFaceLayer";
-import GasMeasurePointLayer from "../gas/GasMeasurePointLayer";
-import GasRichLayer from "../gas/GasRichLayer";
-import SoftLayer from "../gas/SoftLayer";
 import MeasurePointLayer from "../warning/MeasurePointLayer";
 import RiskRangeLayer from "../warning/RiskRangeLayer";
 import WarningPointLayer from "../warning/WarningPointLayer";
@@ -166,22 +164,14 @@ export default function GeoScene({
           <MiningPathLayer items={miningPaths} opacity={opacities.miningPaths} />
         )}
 
-        {layers.gasRichAreas && (
-          <GasRichLayer items={gasRichAreas} opacity={opacities.gasRichAreas} />
-        )}
-
-        {(layers.gasContentPoints || layers.gasPressurePoints) && (
-          <GasMeasurePointLayer
-            contentPoints={layers.gasContentPoints ? gasContentPoints : []}
-            pressurePoints={layers.gasPressurePoints ? gasPressurePoints : []}
-            contentOpacity={opacities.gasContentPoints}
-            pressureOpacity={opacities.gasPressurePoints}
-          />
-        )}
-
-        {layers.softLayers && (
-          <SoftLayer items={softLayers} opacity={opacities.softLayers} />
-        )}
+        <GasLayerGroup
+          layers={layers}
+          opacities={opacities}
+          gasRichAreas={gasRichAreas}
+          gasContentPoints={gasContentPoints}
+          gasPressurePoints={gasPressurePoints}
+          softLayers={softLayers}
+        />
 
         {layers.smallMineDamageAreas && (
           <HiddenHazardLayer
