@@ -1,37 +1,8 @@
 import { useEffect, useState } from "react";
-import {
-  fetchAbandonedShafts,
-  fetchAquifers,
-  fetchBoreholes,
-  fetchCoalSeams,
-  fetchCollapseColumns,
-  fetchFaultInfluenceZones,
-  fetchFaults,
-  fetchGasContentPoints,
-  fetchGasPressurePoints,
-  fetchGasRichAreas,
-  fetchGoafAreas,
-  fetchGoafWaterAreas,
-  fetchMeasurePoints,
-  fetchMine,
-  fetchMiningPaths,
-  fetchPoorSealedBoreholes,
-  fetchRiskBodies,
-  fetchRiskRanges,
-  fetchSmallMineDamageAreas,
-  fetchSoftLayers,
-  fetchStrata,
-  fetchTunnels,
-  fetchTreatmentMeasures,
-  fetchWarningRules,
-  fetchWarnings,
-  fetchWaterInrushPoints,
-  fetchWaterRichAreas,
-  fetchWorkingFaces,
-} from "../api/geoApi";
+import { fetchTreatmentMeasures, fetchWarningRules } from "../api/geoApi";
 import { setTreatmentMeasures } from "../services/measureService";
 import { setWarningRules } from "../services/warningService";
-import { geoDataDefaults } from "../utils/geoDataDefaults";
+import { geoDataDefaults, geoDataLoaders } from "./geoData";
 
 export function useGeoData() {
   const [geoData, setGeoData] = useState(geoDataDefaults);
@@ -46,65 +17,17 @@ export function useGeoData() {
         setLoading(true);
         setError(null);
 
-        const [
-          mineInfoData,
-          strataData,
-          coalSeamsData,
-          boreholesData,
-          faultsData,
-          collapseColumnsData,
-          workingFacesData,
-          tunnelsData,
-          miningPathsData,
-          aquifersData,
-          goafWaterAreasData,
-          waterInrushPointsData,
-          waterRichAreasData,
-          gasRichAreasData,
-          gasContentPointsData,
-          gasPressurePointsData,
-          softLayersData,
-          smallMineDamageAreasData,
-          goafAreasData,
-          abandonedShaftsData,
-          poorSealedBoreholesData,
-          faultInfluenceZonesData,
-          warningPointsData,
-          riskRangesData,
-          measurePointsData,
-          riskBodiesData,
-          warningRulesData,
-          treatmentMeasuresData,
-        ] = await Promise.all([
-          fetchMine(),
-          fetchStrata(),
-          fetchCoalSeams(),
-          fetchBoreholes(),
-          fetchFaults(),
-          fetchCollapseColumns(),
-          fetchWorkingFaces(),
-          fetchTunnels(),
-          fetchMiningPaths(),
-          fetchAquifers(),
-          fetchGoafWaterAreas(),
-          fetchWaterInrushPoints(),
-          fetchWaterRichAreas(),
-          fetchGasRichAreas(),
-          fetchGasContentPoints(),
-          fetchGasPressurePoints(),
-          fetchSoftLayers(),
-          fetchSmallMineDamageAreas(),
-          fetchGoafAreas(),
-          fetchAbandonedShafts(),
-          fetchPoorSealedBoreholes(),
-          fetchFaultInfluenceZones(),
-          fetchWarnings(),
-          fetchRiskRanges(),
-          fetchMeasurePoints(),
-          fetchRiskBodies(),
-          fetchWarningRules(),
-          fetchTreatmentMeasures(),
-        ]);
+        const [dataEntries, warningRulesData, treatmentMeasuresData] =
+          await Promise.all([
+            Promise.all(
+              [...geoDataLoaders.entries()].map(async ([key, loader]) => {
+                const value = await loader.fetcher();
+                return [key, value];
+              })
+            ),
+            fetchWarningRules(),
+            fetchTreatmentMeasures(),
+          ]);
 
         if (cancelled) {
           return;
@@ -112,34 +35,7 @@ export function useGeoData() {
 
         setWarningRules(warningRulesData);
         setTreatmentMeasures(treatmentMeasuresData);
-        setGeoData({
-          mineInfo: mineInfoData,
-          strata: strataData,
-          coalSeams: coalSeamsData,
-          boreholes: boreholesData,
-          faults: faultsData,
-          collapseColumns: collapseColumnsData,
-          workingFaces: workingFacesData,
-          tunnels: tunnelsData,
-          miningPaths: miningPathsData,
-          aquifers: aquifersData,
-          goafWaterAreas: goafWaterAreasData,
-          waterInrushPoints: waterInrushPointsData,
-          waterRichAreas: waterRichAreasData,
-          gasRichAreas: gasRichAreasData,
-          gasContentPoints: gasContentPointsData,
-          gasPressurePoints: gasPressurePointsData,
-          softLayers: softLayersData,
-          smallMineDamageAreas: smallMineDamageAreasData,
-          goafAreas: goafAreasData,
-          abandonedShafts: abandonedShaftsData,
-          poorSealedBoreholes: poorSealedBoreholesData,
-          faultInfluenceZones: faultInfluenceZonesData,
-          warningPoints: warningPointsData,
-          riskRanges: riskRangesData,
-          measurePoints: measurePointsData,
-          riskBodies: riskBodiesData,
-        });
+        setGeoData(Object.fromEntries(dataEntries));
       } catch (error) {
         console.error("Failed to load geo data:", error);
 
