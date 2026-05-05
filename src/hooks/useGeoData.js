@@ -31,38 +31,10 @@ import {
 } from "../api/geoApi";
 import { setTreatmentMeasures } from "../services/measureService";
 import { setWarningRules } from "../services/warningService";
-
-const initialGeoData = {
-  mineInfo: null,
-  strata: [],
-  coalSeams: [],
-  boreholes: [],
-  faults: [],
-  collapseColumns: [],
-  workingFaces: [],
-  tunnels: [],
-  miningPaths: [],
-  aquifers: [],
-  goafWaterAreas: [],
-  waterInrushPoints: [],
-  waterRichAreas: [],
-  gasRichAreas: [],
-  gasContentPoints: [],
-  gasPressurePoints: [],
-  softLayers: [],
-  smallMineDamageAreas: [],
-  goafAreas: [],
-  abandonedShafts: [],
-  poorSealedBoreholes: [],
-  faultInfluenceZones: [],
-  warningPoints: [],
-  riskRanges: [],
-  measurePoints: [],
-  riskBodies: [],
-};
+import { geoDataDefaults } from "../utils/geoDataDefaults";
 
 export function useGeoData() {
-  const [geoData, setGeoData] = useState(initialGeoData);
+  const [geoData, setGeoData] = useState(geoDataDefaults);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
