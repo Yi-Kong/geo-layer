@@ -1,12 +1,8 @@
 import { Canvas } from "@react-three/fiber";
-import LegacyStrataModelGroup from "./LegacyStrataModelGroup";
 import SceneEnvironment from "./SceneEnvironment";
+import GeologyLayerGroup from "./layerGroups/GeologyLayerGroup";
 import BoreholeLayer from "../geology/BoreholeLayer";
-import CoalSeamLayer from "../geology/CoalSeamLayer";
-import CollapseColumnLayer from "../geology/CollapseColumnLayer";
-import FaultLayer from "../geology/FaultLayer";
 import HiddenHazardLayer from "../geology/HiddenHazardLayer";
-import StrataLayer from "../geology/StrataLayer";
 import AquiferLayer from "../hydrology/AquiferLayer";
 import GoafWaterLayer from "../hydrology/GoafWaterLayer";
 import WaterInrushPointLayer from "../hydrology/WaterInrushPointLayer";
@@ -131,45 +127,20 @@ export default function GeoScene({
       <SceneEnvironment />
 
       <group rotation={[0, -0.24, 0]}>
-        {layers.strata && (
-          <>
-            {strata.map((layer) => (
-              <StrataLayer
-                key={layer.id}
-                layer={layer}
-                opacity={opacities.strata}
-              />
-            ))}
-
-            <LegacyStrataModelGroup
-              layerData={layerData}
-              visibleLayerIds={visibleLayerIds}
-              explode={explode}
-              selectedLayerId={selectedLayerId}
-              onSelectLayer={onSelectLayer}
-              opacity={opacities.strata}
-            />
-          </>
-        )}
-
-        {layers.coalSeams && (
-          <CoalSeamLayer items={coalSeams} opacity={opacities.coalSeams} />
-        )}
-
-        {layers.boreholes && (
-          <BoreholeLayer items={boreholes} opacity={opacities.boreholes} />
-        )}
-
-        {layers.faults && (
-          <FaultLayer items={faults} opacity={opacities.faults} />
-        )}
-
-        {layers.collapseColumns && (
-          <CollapseColumnLayer
-            items={collapseColumns}
-            opacity={opacities.collapseColumns}
-          />
-        )}
+        <GeologyLayerGroup
+          layers={layers}
+          opacities={opacities}
+          strata={strata}
+          coalSeams={coalSeams}
+          boreholes={boreholes}
+          faults={faults}
+          collapseColumns={collapseColumns}
+          layerData={layerData}
+          visibleLayerIds={visibleLayerIds}
+          explode={explode}
+          selectedLayerId={selectedLayerId}
+          onSelectLayer={onSelectLayer}
+        />
 
         {layers.aquifers && (
           <AquiferLayer items={aquifers} opacity={opacities.aquifers} />
